@@ -5,11 +5,12 @@ import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 
 import VideoPlayer from './views/VideoPlayer'
+import TextTransmit from './views/TextTransmit'
 
 render(
   <div>
     <h1>Hello, World</h1>
-    <VideoPlayer />
+    <TextTransmit />
   </div>,
   document.getElementById('root')
 )
