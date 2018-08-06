@@ -2,6 +2,7 @@ import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
 
 import { ConnectionState, addOffer } from '../../state/connection'
+import { urlForOffer } from '../../conn-utils'
 
 type ChatProps = {
   connection?: RTCPeerConnection
@@ -10,6 +11,7 @@ type ChatProps = {
 
 const Chat: React.SFC<ChatProps> = (props) => {
   const { offer, connection, dispatch } = props
+  const url = offer && urlForOffer(offer)
   const onClick = () => {
     console.log('Creating offer')
 
@@ -28,6 +30,9 @@ const Chat: React.SFC<ChatProps> = (props) => {
           <ul>
             <li>SDP: { offer.sdp }</li>
             <li>Type: { offer.type }</li>
+            <li>
+              <a href={url} target="_blank">{ url }</a>
+            </li>
           </ul>
         </div>
       ) }
