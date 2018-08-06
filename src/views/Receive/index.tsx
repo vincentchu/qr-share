@@ -1,16 +1,18 @@
 import * as React from 'react'
 import { RouteComponentProps } from 'react-router'
 import { Dispatch } from 'redux'
-import { DispatchProp } from 'react-redux'
+import { connect, DispatchProp } from 'react-redux'
 
 import loadingComponent from '../loading-component'
-import { decodeOffer } from '../../conn-utils'
+import { ConnectionState, addAnswer } from '../../state/connection'
+import { decodeOffer, receiveHandshake } from '../../conn-utils'
 
 type SDPRouteProps = {
   sdp: string
 }
 
 type ReceiveProps = {
+  connection: RTCPeerConnection
 } & RouteComponentProps<SDPRouteProps> & DispatchProp
 
 const Receive: React.SFC<ReceiveProps> = (props) => {
@@ -23,13 +25,17 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 }
 
 const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
-  const { sdp } = props.match.params
-  console.log('SDP!', sdp)
-
+  const {
+    connection,
+    match: { params: { sdp } },
+  } = props
   const offer = decodeOffer(sdp)
-  console.log('OFFER', offer)
 
-  return Promise.resolve(1)
+  return receiveHandshake(connection, offer).then((answer) => dispatch(addAnswer(answer)))
 }
 
-export default loadingComponent(loader, Receive)
+const mapStateToProps = (state: {
+  connection: ConnectionState
+}) => ({ connection: state.connection.connection })
+
+export default connect(mapStateToProps)(loadingComponent(loader, Receive))

@@ -1,8 +1,19 @@
-export const createOffer = (conn: RTCPeerConnection): Promise<RTCSessionDescriptionInit> =>
-  conn.createOffer()
+export const startHandshake = (conn: RTCPeerConnection): Promise<RTCSessionDescriptionInit> =>
+  conn.createOffer().then((offer) => {
+    conn.setLocalDescription(offer)
 
-export const createAnswer = (conn: RTCPeerConnection): Promise<RTCSessionDescriptionInit> =>
-  conn.createAnswer()
+    return offer
+  })
+
+export const receiveHandshake = (conn: RTCPeerConnection, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> => {
+  conn.setRemoteDescription(offer)
+
+  return conn.createAnswer().then((answer) => {
+    conn.setLocalDescription(answer)
+
+    return answer
+  })
+}
 
 export const urlForOffer = (offer: RTCSessionDescriptionInit): string => {
   const encodedSDP = btoa(offer.sdp)

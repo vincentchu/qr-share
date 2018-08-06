@@ -2,7 +2,7 @@ import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
 
 import { ConnectionState, addOffer } from '../../state/connection'
-import { urlForOffer } from '../../conn-utils'
+import { urlForOffer, startHandshake } from '../../conn-utils'
 
 type ChatProps = {
   connection?: RTCPeerConnection
@@ -15,7 +15,7 @@ const Chat: React.SFC<ChatProps> = (props) => {
   const onClick = () => {
     console.log('Creating offer')
 
-    connection.createOffer().then((createdOffer) => dispatch(addOffer(createdOffer)))
+    startHandshake(connection).then((createdOffer) => dispatch(addOffer(createdOffer)))
   }
 
   return (
