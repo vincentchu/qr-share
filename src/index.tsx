@@ -4,13 +4,17 @@ import { Route } from 'react-router'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 
-import VideoPlayer from './views/VideoPlayer'
-import TextTransmit from './views/TextTransmit'
+import store from './redux-store'
+import App from './App'
+import Chat from './views/Chat'
 
 render(
-  <div>
-    <h1>Hello, World</h1>
-    <TextTransmit />
-  </div>,
+  <Provider store={store}>
+    <BrowserRouter>
+      <App>
+        <Chat />
+      </App>
+    </BrowserRouter>
+  </Provider>,
   document.getElementById('root')
 )
