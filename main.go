@@ -141,6 +141,12 @@ func (handler *ConnectionHandler) UpdateOffer(id Id, message Message) {
 	handler.mutex.Lock()
 	handler.offers[id] = message.data
 	handler.mutex.Unlock()
+
+	offerConn, ok := handler.offerConns[id]
+	if ok {
+		logger.Printf("%s: UpdateOffer - sending confirmation", id)
+		offerConn.WriteMessage(websocket.TextMessage, []byte(message.data))
+	}
 }
 
 func (handler *ConnectionHandler) UpdateAnswer(id Id, message Message) {
@@ -153,6 +159,12 @@ func (handler *ConnectionHandler) UpdateAnswer(id Id, message Message) {
 	if ok {
 		logger.Printf("%s: UpdateAnswer - Sending answer to offer side", id)
 		offerConn.WriteMessage(websocket.TextMessage, []byte(message.data))
+	}
+
+	answerConn, ok := handler.answerConns[id]
+	if ok {
+		logger.Printf("%s: UpdateAnswer - Sending confirmation to answer side", id)
+		answerConn.WriteMessage(websocket.TextMessage, []byte(message.data))
 	}
 }
 

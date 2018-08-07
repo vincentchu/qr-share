@@ -11,11 +11,17 @@ type ChatProps = {
 
 const Chat: React.SFC<ChatProps> = (props) => {
   const { offer, connection, dispatch } = props
-  const url = offer && urlForOffer(offer)
+  const url = offer && `http://localhost:8080/recv/foo`
+
   const onClick = () => {
     console.log('Creating offer')
 
-    startHandshake(connection).then((createdOffer) => dispatch(addOffer(createdOffer)))
+    startHandshake(connection, "foo").then((handshake) => {
+      const { offer, websocketApi } = handshake
+
+      dispatch(addOffer(offer))
+      return websocketApi.waitForAnswer().then((answer) => console.log('ANSWER', answer))
+    })
   }
 
   return (
