@@ -20,7 +20,9 @@ const DevServerConf = {
     colors: { level: 2, hasBasic: true, has256: true, has16m: false },
   },
   disableHostCheck: true,
-  proxy: {},
+  proxy: {
+    '/ws': { target: 'http://localhost:9090', secure: false },
+  },
 }
 
 const resolve = (file) => path.resolve(__dirname, file)
