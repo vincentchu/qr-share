@@ -7,22 +7,32 @@ export const startHandshake = (conn: RTCPeerConnection, id: string): Promise<Han
   const url = `ws://localhost:9090/ws?id=${id}&scope=0`
   const wsApi = new WebSockAPI(url)
 
-  return Promise.all([ conn.createOffer(), wsApi.open() ]).then(([ offer ]) =>
-    wsApi.updateOffer(btoa(offer.sdp)).then(() => ({
+  return Promise.all([ conn.createOffer(), wsApi.open() ]).then(([ offer ]) => {
+    conn.setLocalDescription(offer)
+
+    return wsApi.updateOffer(btoa(offer.sdp)).then(() => ({
       websocketApi: wsApi,
       offer,
     }))
-  )
+  })
 }
 
-export const receiveHandshake = (conn: RTCPeerConnection, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> => {
-  conn.setRemoteDescription(offer)
+export const receiveHandshake = (conn: RTCPeerConnection, id: string): Promise<RTCSessionDescriptionInit> => {
+  const url = `ws://localhost:9090/ws?id=${id}&scope=1`
+  const wsApi = new WebSockAPI(url)
 
-  return conn.createAnswer().then((answer) => {
-    conn.setLocalDescription(answer)
-
-    return answer
-  })
+  return wsApi.open()
+    .then(wsApi.getOffer)
+    .then((encodedSDP) => {
+      const offer = decodeOffer(encodedSDP)
+      return conn.setRemoteDescription(offer)
+    })
+    .then(() => conn.createAnswer())
+    .then((answer) => {
+      console.log('Updating answer', btoa(answer.sdp))
+      conn.setLocalDescription(answer)
+      return wsApi.updateAnswer(btoa(answer.sdp)).then(() => answer)
+    })
 }
 
 export const urlForOffer = (offer: RTCSessionDescriptionInit): string => {
@@ -121,10 +131,17 @@ class WebSockAPI {
     })
   }
 
-  waitForAnswer = (): Promise<string> => {
+  waitForAnswer = (): Promise<RTCSessionDescriptionInit> => {
     return new Promise((resolve) => {
       this.ws.onmessage = (mesg) => {
-        resolve(mesg.data)
+        const answer: RTCSessionDescriptionInit = {
+          sdp: atob(mesg.data),
+          type: 'answer',
+        }
+
+        console.log(' waitForAnswer MESG', mesg, answer)
+
+        resolve(answer)
       }
     })
   }

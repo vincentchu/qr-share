@@ -20,7 +20,10 @@ const Chat: React.SFC<ChatProps> = (props) => {
       const { offer, websocketApi } = handshake
 
       dispatch(addOffer(offer))
-      return websocketApi.waitForAnswer().then((answer) => console.log('ANSWER', answer))
+      return websocketApi.waitForAnswer().then((answer) => {
+        console.log('Received answer from remote:', answer)
+        connection.setRemoteDescription(answer)
+      })
     })
   }
 

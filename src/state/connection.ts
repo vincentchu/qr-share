@@ -58,10 +58,20 @@ export const reducer: Reducer<ConnectionState, AnyAction> = (
   }
 }
 
-export const createConnection: ActionCreator<CreateConnection> = () => ({
-  type: CREATE_CONN,
-  connection: new RTCPeerConnection(null)
-})
+export const createConnection: ActionCreator<CreateConnection> = () => {
+
+  const config = { iceServers: [{ urls: 'stun:stun.example.org' }] }
+  const connection = new RTCPeerConnection(config)
+  connection.onicecandidate = (iceEvt) => console.log('ONICE', iceEvt)
+
+  // @ts-ignore
+  window.connection = connection
+
+  return {
+    type: CREATE_CONN,
+    connection,
+  }
+}
 
 export const addOffer: ActionCreator<AddOffer> = (offer: RTCSessionDescriptionInit) => ({
   type: ADD_OFFER,

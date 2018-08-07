@@ -8,7 +8,7 @@ import { ConnectionState, addAnswer } from '../../state/connection'
 import { decodeOffer, receiveHandshake } from '../../conn-utils'
 
 type SDPRouteProps = {
-  sdp: string
+  id: string
 }
 
 type ReceiveProps = {
@@ -27,11 +27,10 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   const {
     connection,
-    match: { params: { sdp } },
+    match: { params: { id } },
   } = props
-  const offer = decodeOffer(sdp)
 
-  return receiveHandshake(connection, offer).then((answer) => dispatch(addAnswer(answer)))
+  return receiveHandshake(connection, id).then((answer) => dispatch(addAnswer(answer)))
 }
 
 const mapStateToProps = (state: {

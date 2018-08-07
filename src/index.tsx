@@ -15,7 +15,7 @@ render(
     <BrowserRouter>
       <App>
         <Route path="/" component={Chat} exact />
-        <Route path="/recv/:sdp" component={Receive} />
+        <Route path="/recv/:id" component={Receive} />
       </App>
     </BrowserRouter>
   </Provider>,
