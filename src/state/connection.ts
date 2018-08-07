@@ -60,9 +60,17 @@ export const reducer: Reducer<ConnectionState, AnyAction> = (
 
 export const createConnection: ActionCreator<CreateConnection> = () => {
 
-  const config = { iceServers: [{ urls: 'stun:stun.example.org' }] }
+  const config = {
+    iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ],
+  }
   const connection = new RTCPeerConnection(config)
-  connection.onicecandidate = (iceEvt) => console.log('ONICE', iceEvt)
+  connection.onicecandidate = (iceEvt) => console.log('ONICE', iceEvt.candidate)
+  connection.onnegotiationneeded = (foo) => console.log('onNegotiation', foo)
+  connection.onsignalingstatechange = (foo) => console.log('onSignalingChange', foo)
+  connection.onicecandidateerror = (err) => console.log('onIceCandidateErr', err)
+  connection.onconnectionstatechange = (evt) => console.log('onConnectionStateChange', evt)
+  connection.oniceconnectionstatechange = (foo) => console.log('onIceConnectionStateChange', foo)
+  connection.onicegatheringstatechange = (foo) => console.log('onIceGatheringStateChange', foo)
 
   // @ts-ignore
   window.connection = connection

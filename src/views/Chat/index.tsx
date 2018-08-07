@@ -16,6 +16,11 @@ const Chat: React.SFC<ChatProps> = (props) => {
   const onClick = () => {
     console.log('Creating offer')
 
+    const sendChannel = connection.createDataChannel('send')
+    sendChannel.onopen = () => console.log('DATA CHANNEL OPEN')
+    sendChannel.onclose = () => console.log('DATA CHANNEL CLOSE')
+
+
     startHandshake(connection, "foo").then((handshake) => {
       const { offer, websocketApi } = handshake
 
