@@ -1,6 +1,7 @@
 type Handshake = {
   websocketApi: WebSockAPI
-  offer: RTCSessionDescriptionInit
+  offer?: RTCSessionDescriptionInit
+  answer?: RTCSessionDescriptionInit
 }
 
 export const startHandshake = (conn: RTCPeerConnection, id: string): Promise<Handshake> => {
@@ -17,7 +18,7 @@ export const startHandshake = (conn: RTCPeerConnection, id: string): Promise<Han
   })
 }
 
-export const receiveHandshake = (conn: RTCPeerConnection, id: string): Promise<RTCSessionDescriptionInit> => {
+export const receiveHandshake = (conn: RTCPeerConnection, id: string): Promise<Handshake> => {
   const url = `ws://localhost:9090/ws?id=${id}&scope=1`
   const wsApi = new WebSockAPI(url)
 
@@ -31,7 +32,11 @@ export const receiveHandshake = (conn: RTCPeerConnection, id: string): Promise<R
     .then((answer) => {
       console.log('Updating answer', btoa(answer.sdp))
       conn.setLocalDescription(answer)
-      return wsApi.updateAnswer(btoa(answer.sdp)).then(() => answer)
+
+      return wsApi.updateAnswer(btoa(answer.sdp)).then(() => ({
+        websocketApi: wsApi,
+        answer,
+      }))
     })
 }
 
@@ -143,6 +148,15 @@ class WebSockAPI {
 
         resolve(answer)
       }
+    })
+  }
+
+  sendCandidate = (candidate: RTCIceCandidate): Promise<any> => {
+    return new Promise((resolve) => {
+      const encodedCandidate = btoa(JSON.stringify(candidate))
+
+      this.ws.send(encodedCandidate)
+      resolve()
     })
   }
 }

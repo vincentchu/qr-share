@@ -64,16 +64,24 @@ export const createConnection: ActionCreator<CreateConnection> = () => {
     iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ],
   }
   const connection = new RTCPeerConnection(config)
-  connection.onicecandidate = (iceEvt) => console.log('ONICE', iceEvt.candidate)
-  connection.onnegotiationneeded = (foo) => console.log('onNegotiation', foo)
-  connection.onsignalingstatechange = (foo) => console.log('onSignalingChange', foo)
-  connection.onicecandidateerror = (err) => console.log('onIceCandidateErr', err)
-  connection.onconnectionstatechange = (evt) => console.log('onConnectionStateChange', evt)
-  connection.oniceconnectionstatechange = (foo) => console.log('onIceConnectionStateChange', foo)
-  connection.onicegatheringstatechange = (foo) => console.log('onIceGatheringStateChange', foo)
+  connection.onicecandidate = (iceEvt) => { console.log(btoa(JSON.stringify(iceEvt.candidate))) }
+
+  // connection.onnegotiationneeded = (foo) => console.log('onNegotiation', foo)
+  // connection.onsignalingstatechange = (foo) => console.log('onSignalingChange', foo)
+  // connection.onicecandidateerror = (err) => console.log('onIceCandidateErr', err)
+  // connection.onconnectionstatechange = (evt) => console.log('onConnectionStateChange', evt)
+  // connection.oniceconnectionstatechange = (foo) => console.log('onIceConnectionStateChange', foo)
+  // connection.onicegatheringstatechange = (foo) => console.log('onIceGatheringStateChange', foo)
 
   // @ts-ignore
   window.connection = connection
+
+  // @ts-ignore
+  window.add = (encodedStr: string) => {
+    const decodedCandidate = JSON.parse(atob(encodedStr))
+
+    connection.addIceCandidate(decodedCandidate)
+  }
 
   return {
     type: CREATE_CONN,

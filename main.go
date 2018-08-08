@@ -20,9 +20,10 @@ type Id string
 type MessageType int
 
 const (
-	UpdateOffer  MessageType = 0
-	UpdateAnswer MessageType = 1
-	GetOffer     MessageType = 2
+	UpdateOffer   MessageType = 0
+	UpdateAnswer  MessageType = 1
+	GetOffer      MessageType = 2
+	SendCandidate MessageType = 3
 )
 
 type Message struct {
@@ -86,7 +87,7 @@ func (handler *ConnectionHandler) HandleConnection(scope ScopeType, id Id, conn 
 			logger.Printf("%s/%d: Error parsing message: %v", id, scope, err)
 		}
 
-		err = handler.HandleMessage(id, message)
+		err = handler.HandleMessage(id, scope, message)
 		if err != nil {
 			logger.Printf("%s/%d: Error handling message: %v", id, scope, err)
 		}
@@ -136,59 +137,82 @@ func (handler *ConnectionHandler) CloseConnection(scope ScopeType, id Id, conn *
 	return conn.Close()
 }
 
-func (handler *ConnectionHandler) UpdateOffer(id Id, message Message) {
-	logger.Printf("%s: UpdateOffer: %s", id, message.data)
+func (handler *ConnectionHandler) UpdateOffer(id Id, scope ScopeType, message Message) {
+	logger.Printf("%s/%d: UpdateOffer: %s", id, scope, message.data)
 	handler.mutex.Lock()
 	handler.offers[id] = message.data
 	handler.mutex.Unlock()
 
 	offerConn, ok := handler.offerConns[id]
 	if ok {
-		logger.Printf("%s: UpdateOffer - sending confirmation", id)
+		logger.Printf("%s/%d: UpdateOffer - sending confirmation", id, scope)
 		offerConn.WriteMessage(websocket.TextMessage, []byte(message.data))
 	}
 }
 
-func (handler *ConnectionHandler) UpdateAnswer(id Id, message Message) {
-	logger.Printf("%s: UpdateAnswer: %s", id, message.data)
+func (handler *ConnectionHandler) UpdateAnswer(id Id, scope ScopeType, message Message) {
+	logger.Printf("%s/%d: UpdateAnswer: %s", id, scope, message.data)
 	handler.mutex.Lock()
 	handler.answers[id] = message.data
 	handler.mutex.Unlock()
 
 	offerConn, ok := handler.offerConns[id]
 	if ok {
-		logger.Printf("%s: UpdateAnswer - Sending answer to offer side", id)
+		logger.Printf("%s/%d: UpdateAnswer - Sending answer to offer side", id, scope)
 		offerConn.WriteMessage(websocket.TextMessage, []byte(message.data))
 	}
 
 	answerConn, ok := handler.answerConns[id]
 	if ok {
-		logger.Printf("%s: UpdateAnswer - Sending confirmation to answer side", id)
+		logger.Printf("%s/%d: UpdateAnswer - Sending confirmation to answer side", id, scope)
 		answerConn.WriteMessage(websocket.TextMessage, []byte(message.data))
 	}
 }
 
-func (handler *ConnectionHandler) GetOffer(id Id, message Message) {
-	logger.Printf("%s: GetOffer", id)
+func (handler *ConnectionHandler) GetOffer(id Id, scope ScopeType, message Message) {
+	logger.Printf("%s/%d: GetOffer", id, scope)
 	offer, ok := handler.offers[id]
 	conn, connOk := handler.answerConns[id]
 
 	if ok && connOk {
-		logger.Printf("%s: GetOffer - Sending offer: %s", id, offer)
+		logger.Printf("%s/%d: GetOffer - Sending offer: %s", id, scope, offer)
 		conn.WriteMessage(websocket.TextMessage, []byte(offer))
 	}
 }
 
-func (handler *ConnectionHandler) HandleMessage(id Id, message Message) error {
+func (handler *ConnectionHandler) SendCandidate(id Id, scope ScopeType, message Message) {
+	logger.Printf("%s/%d: SendCandidate", id, scope)
+
+	var conn *websocket.Conn
+	var present bool
+
+	switch scope {
+	case OfferScope:
+		conn, present = handler.answerConns[id]
+
+	case AnswerScope:
+		conn, present = handler.offerConns[id]
+	}
+
+	if present {
+		logger.Printf("%s/%d: Sending candidate to other side: %s", id, scope, message.data)
+		conn.WriteMessage(websocket.TextMessage, []byte(message.data))
+	}
+}
+
+func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message Message) error {
 	switch message.mesgType {
 	case UpdateOffer:
-		handler.UpdateOffer(id, message)
+		handler.UpdateOffer(id, scope, message)
 
 	case UpdateAnswer:
-		handler.UpdateAnswer(id, message)
+		handler.UpdateAnswer(id, scope, message)
 
 	case GetOffer:
-		handler.GetOffer(id, message)
+		handler.GetOffer(id, scope, message)
+
+	case SendCandidate:
+		handler.SendCandidate(id, scope, message)
 	}
 
 	return nil

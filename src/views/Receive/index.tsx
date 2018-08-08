@@ -30,7 +30,9 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
     match: { params: { id } },
   } = props
 
-  return receiveHandshake(connection, id).then((answer) => dispatch(addAnswer(answer)))
+  return receiveHandshake(connection, id).then(({ websocketApi, answer }) => {
+    dispatch(addAnswer(answer))
+  })
 }
 
 const mapStateToProps = (state: {
