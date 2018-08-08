@@ -45,7 +45,7 @@ class HandshakeApi {
         return this.handleOffer(mesg)
 
       case 'answer':
-        break
+        return this.handleAnswer(mesg)
 
         default:
           console.log('onWsMessage: Unexpected message type', mesg)
@@ -62,6 +62,11 @@ class HandshakeApi {
 
   handleOffer = (mesg: HandshakeApiMessage) => {
     const offer: RTCSessionDescriptionInit = JSON.parse(mesg.data)
+    const maybeCallback = this.openMessages['offer']
+    if (maybeCallback) {
+      maybeCallback()
+      delete this.openMessages['offer']
+    }
 
     this.rtcConn.setRemoteDescription(offer)
     this.rtcConn.createAnswer()
@@ -75,6 +80,19 @@ class HandshakeApi {
           data: JSON.stringify(answer),
         })
       })
+  }
+
+  handleAnswer = (mesg: HandshakeApiMessage) => {
+    const answer: RTCSessionDescriptionInit = JSON.parse(mesg.data)
+    const maybeCallback = this.openMessages['answer']
+
+    if (maybeCallback) {
+      console.log('handleAnswer: Settting local description')
+      this.rtcConn.setRemoteDescription(answer)
+
+      maybeCallback()
+      delete this.openMessages['answer']
+    }
   }
 
   init = (): Promise<any> => {

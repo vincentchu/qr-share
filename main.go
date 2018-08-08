@@ -150,12 +150,12 @@ func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message 
 		return err
 	}
 
-	_ = partner
-	_ = partnerOk
-
 	switch message.MesgType {
 	case "offer":
 		handler.Offer(id, scope, message)
+
+	case "answer":
+		handler.Answer(id, scope, partner, partnerOk, message)
 
 	case "get-offer":
 		handler.GetOffer(id, scope, sender, senderOk)
@@ -170,12 +170,22 @@ func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message 
 }
 
 func (handler *ConnectionHandler) Offer(id Id, scope ScopeType, message HandshakeApiMessage) {
-	logger.Printf("%s/%d: UpdateOffer: %v", id, scope, message)
+	logger.Printf("%s/%d: Offer: %v", id, scope, message)
 
 	jsonBytes, _ := json.Marshal(message)
 	handler.mutex.Lock()
 	handler.offers[id] = jsonBytes
 	handler.mutex.Unlock()
+}
+
+func (handler *ConnectionHandler) Answer(id Id, scope ScopeType, partner *websocket.Conn, partnerOk bool, message HandshakeApiMessage) {
+	if !partnerOk {
+		logger.Printf("%s/%d: Answer - partner not found (unexpected)", id, scope)
+		return
+	}
+
+	logger.Printf("%s/%d: Answer - sending back response %+v", id, scope, message)
+	partner.WriteJSON(message)
 }
 
 func (handler *ConnectionHandler) GetOffer(id Id, scope ScopeType, requester *websocket.Conn, requesterOk bool) {
