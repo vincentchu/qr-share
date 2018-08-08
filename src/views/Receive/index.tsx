@@ -30,10 +30,10 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
     match: { params: { id } },
   } = props
 
-  const url = `ws://localhost:9090/ws?id=${id}&scope=1`
+  const url = 'ws://localhost:9090/ws'
 
-  const h = new HandshakeApi(url)
-  h.rtcConn.ondatachannel = (dcEvt) => {
+  const h = new HandshakeApi(url, id, 'answer')
+  h.peerConnection.ondatachannel = (dcEvt) => {
     console.log('RECEIVED DATA CHANNEL', dcEvt)
     const recvChannel = dcEvt.channel
 

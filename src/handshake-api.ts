@@ -12,19 +12,26 @@ type HandshakeApiMessage = {
   data: string
 }
 
+type ScopeType = 'offer' | 'answer'
+
 class HandshakeApi {
-  url: string
   ws: WebSocket
-  rtcConn: RTCPeerConnection
   openMessages: { [id: string ]: () => void }
 
-  constructor(url: string) {
-    this.url = url
-    this.ws = new WebSocket(url)
-    this.rtcConn = new RTCPeerConnection(Config)
-    this.openMessages = {}
+  url: string
+  id: string
+  scope: ScopeType
+  peerConnection: RTCPeerConnection
 
+  constructor(baseUrl: string, id: string, scope: ScopeType) {
+    const scopeVal = scope === 'offer' ? 0 : 1
+
+    this.url = `${baseUrl}?id=${id}&scope=${scopeVal}`
+    this.ws = new WebSocket(this.url)
     this.ws.onmessage = this.onWsMessage
+
+    this.peerConnection = new RTCPeerConnection(Config)
+    this.openMessages = {}
   }
 
   onWsMessage = (mesgEvt: MessageEvent) => {
@@ -71,11 +78,11 @@ class HandshakeApi {
       delete this.openMessages['offer']
     }
 
-    this.rtcConn.setRemoteDescription(offer)
-    this.rtcConn.createAnswer()
+    this.peerConnection.setRemoteDescription(offer)
+    this.peerConnection.createAnswer()
       .then((answer) => {
         console.log('handleOffer: Setting local/remote description and sending answer')
-        this.rtcConn.setLocalDescription(answer)
+        this.peerConnection.setLocalDescription(answer)
 
         return this.wsSend({
           id: uuid(),
@@ -91,7 +98,7 @@ class HandshakeApi {
 
     if (maybeCallback) {
       console.log('handleAnswer: Settting local description')
-      this.rtcConn.setRemoteDescription(answer)
+      this.peerConnection.setRemoteDescription(answer)
 
       maybeCallback()
       delete this.openMessages['answer']
@@ -102,7 +109,7 @@ class HandshakeApi {
     const candidate: RTCIceCandidate = JSON.parse(mesg.data)
 
     console.log('handleCandidate: Received and adding ice candidate', candidate)
-    this.rtcConn.addIceCandidate(candidate)
+    this.peerConnection.addIceCandidate(candidate)
   }
 
   onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {
@@ -129,7 +136,7 @@ class HandshakeApi {
       const waitForReady = () => {
         tries = tries + 1
         if (this.ws.readyState !== WebSocket.CONNECTING) {
-          this.rtcConn.onicecandidate = this.onIceCandidate
+          this.peerConnection.onicecandidate = this.onIceCandidate
 
           return resolve()
         }
@@ -146,9 +153,9 @@ class HandshakeApi {
   // Called by the offerer to start handshake
   startHandshake = (): Promise<any> => {
     return this.init()
-      .then(() => this.rtcConn.createOffer())
+      .then(() => this.peerConnection.createOffer())
       .then((offer) => {
-        this.rtcConn.setLocalDescription(offer)
+        this.peerConnection.setLocalDescription(offer)
 
         return this.wsSend({
           id: uuid(),
@@ -173,27 +180,6 @@ class HandshakeApi {
       }))
 
     return Promise.all([ sendGetOfferPromise, recvOfferPromise ])
-  }
-
-  openDataChannel = (name: string): Promise<RTCDataChannel> => {
-    const chan = this.rtcConn.createDataChannel(name)
-
-    let tries = 0
-    const openPromise = new Promise<RTCDataChannel>((resolve) => {
-      const waitForReady = () => {
-        tries = tries + 1
-        console.log('chan', chan.readyState, tries)
-        if (chan.readyState != 'connecting') {
-          return resolve(chan)
-        }
-
-        setTimeout(waitForReady, 50)
-      }
-
-      waitForReady()
-    })
-
-    return openPromise
   }
 }
 

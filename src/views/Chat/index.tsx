@@ -16,11 +16,11 @@ const Chat: React.SFC<ChatProps> = (props) => {
 
   const onClick = () => {
     console.log('Starting Handshake')
-    const h = new HandshakeApi(`ws://localhost:9090/ws?id=${id}&scope=0`)
+    const h = new HandshakeApi('ws://localhost:9090/ws', id, 'offer')
     // @ts-ignore
     window.h = h
 
-    const dc = h.rtcConn.createDataChannel('foo')
+    const dc = h.peerConnection.createDataChannel('foo')
     dc.onopen = () => console.log('DC OPEN')
     dc.onclose = () => console.log('DC CLOSE')
 
