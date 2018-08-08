@@ -4,7 +4,7 @@ const Config = {
   iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ],
 }
 
-type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer'
+type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate'
 
 type HandshakeApiMessage = {
   id: string
@@ -47,8 +47,11 @@ class HandshakeApi {
       case 'answer':
         return this.handleAnswer(mesg)
 
-        default:
-          console.log('onWsMessage: Unexpected message type', mesg)
+      case 'candidate':
+        return this.handleCandidate(mesg)
+
+      default:
+        console.log('onWsMessage: Unexpected message type', mesg)
     }
   }
 
@@ -95,12 +98,39 @@ class HandshakeApi {
     }
   }
 
+  handleCandidate = (mesg: HandshakeApiMessage) => {
+    const candidate: RTCIceCandidate = JSON.parse(mesg.data)
+
+    console.log('handleCandidate: Received and adding ice candidate', candidate)
+    this.rtcConn.addIceCandidate(candidate)
+  }
+
+  onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {
+    console.log('RECV ice', iceEvt.candidate)
+
+    if (iceEvt.candidate) {
+      this.wsSend({
+        id: uuid(),
+        mesgType: 'candidate',
+        data: JSON.stringify(iceEvt.candidate)
+      })
+    }
+  }
+
+  waitForAnswer = (): Promise<any> => {
+    return new Promise((resolve) => {
+      this.openMessages['answer'] = resolve
+    })
+  }
+
   init = (): Promise<any> => {
     let tries = 0
     const openPromise = new Promise((resolve) => {
       const waitForReady = () => {
         tries = tries + 1
         if (this.ws.readyState !== WebSocket.CONNECTING) {
+          this.rtcConn.onicecandidate = this.onIceCandidate
+
           return resolve()
         }
 
@@ -145,10 +175,25 @@ class HandshakeApi {
     return Promise.all([ sendGetOfferPromise, recvOfferPromise ])
   }
 
-  waitForAnswer = (): Promise<any> => {
-    return new Promise((resolve) => {
-      this.openMessages['answer'] = resolve
+  openDataChannel = (name: string): Promise<RTCDataChannel> => {
+    const chan = this.rtcConn.createDataChannel(name)
+
+    let tries = 0
+    const openPromise = new Promise<RTCDataChannel>((resolve) => {
+      const waitForReady = () => {
+        tries = tries + 1
+        console.log('chan', chan.readyState, tries)
+        if (chan.readyState != 'connecting') {
+          return resolve(chan)
+        }
+
+        setTimeout(waitForReady, 50)
+      }
+
+      waitForReady()
     })
+
+    return openPromise
   }
 }
 

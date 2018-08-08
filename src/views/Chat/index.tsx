@@ -20,7 +20,19 @@ const Chat: React.SFC<ChatProps> = (props) => {
     // @ts-ignore
     window.h = h
 
-    h.startHandshake()
+    const dc = h.rtcConn.createDataChannel('foo')
+    dc.onopen = () => console.log('DC OPEN')
+    dc.onclose = () => console.log('DC CLOSE')
+
+    // @ts-ignore
+    window.dc = dc
+
+
+    h.startHandshake().then(() => {
+      console.log('Handshake Done')
+    })
+
+
     dispatch(addHandshake(h))
   }
 

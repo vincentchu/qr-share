@@ -159,6 +159,9 @@ func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message 
 
 	case "get-offer":
 		handler.GetOffer(id, scope, sender, senderOk)
+
+	case "candidate":
+		handler.Candidate(id, scope, partner, partnerOk, message)
 	}
 
 	if senderOk {
@@ -211,73 +214,15 @@ func (handler *ConnectionHandler) GetOffer(id Id, scope ScopeType, requester *we
 	requester.WriteJSON(offer)
 }
 
-// func (handler *ConnectionHandler) UpdateAnswer(id Id, scope ScopeType, message Message) {
-// 	logger.Printf("%s/%d: UpdateAnswer: %s", id, scope, message.data)
-// 	handler.mutex.Lock()
-// 	handler.answers[id] = message.data
-// 	handler.mutex.Unlock()
+func (handler *ConnectionHandler) Candidate(id Id, scope ScopeType, partner *websocket.Conn, partnerOk bool, message HandshakeApiMessage) {
+	if !partnerOk {
+		logger.Printf("%s/%d: Candidate - partner connection not found (unexpected)", id, scope)
+		return
+	}
 
-// 	offerConn, ok := handler.offerConns[id]
-// 	if ok {
-// 		logger.Printf("%s/%d: UpdateAnswer - Sending answer to offer side", id, scope)
-// 		offerConn.WriteMessage(websocket.TextMessage, []byte(message.data))
-// 	}
-
-// 	answerConn, ok := handler.answerConns[id]
-// 	if ok {
-// 		logger.Printf("%s/%d: UpdateAnswer - Sending confirmation to answer side", id, scope)
-// 		answerConn.WriteMessage(websocket.TextMessage, []byte(message.data))
-// 	}
-// }
-
-// func (handler *ConnectionHandler) GetOffer(id Id, scope ScopeType, message Message) {
-// 	logger.Printf("%s/%d: GetOffer", id, scope)
-// 	offer, ok := handler.offers[id]
-// 	conn, connOk := handler.answerConns[id]
-
-// 	if ok && connOk {
-// 		logger.Printf("%s/%d: GetOffer - Sending offer: %s", id, scope, offer)
-// 		conn.WriteMessage(websocket.TextMessage, []byte(offer))
-// 	}
-// }
-
-// func (handler *ConnectionHandler) SendCandidate(id Id, scope ScopeType, message Message) {
-// 	logger.Printf("%s/%d: SendCandidate", id, scope)
-
-// 	var conn *websocket.Conn
-// 	var present bool
-
-// 	switch scope {
-// 	case OfferScope:
-// 		conn, present = handler.answerConns[id]
-
-// 	case AnswerScope:
-// 		conn, present = handler.offerConns[id]
-// 	}
-
-// 	if present {
-// 		logger.Printf("%s/%d: Sending candidate to other side: %s", id, scope, message.data)
-// 		conn.WriteMessage(websocket.TextMessage, []byte(message.data))
-// 	}
-// }
-
-// func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message Message) error {
-// 	switch message.mesgType {
-// 	case UpdateOffer:
-// 		handler.UpdateOffer(id, scope, message)
-
-// 	case UpdateAnswer:
-// 		handler.UpdateAnswer(id, scope, message)
-
-// 	case GetOffer:
-// 		handler.GetOffer(id, scope, message)
-
-// 	case SendCandidate:
-// 		handler.SendCandidate(id, scope, message)
-// 	}
-
-// 	return nil
-// }
+	logger.Printf("%s/%d: Candidate - sending candidate to partner %v", id, scope, message)
+	partner.WriteJSON(message)
+}
 
 var logger = log.New(os.Stdout, "", log.LstdFlags)
 

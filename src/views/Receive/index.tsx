@@ -33,8 +33,16 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   const url = `ws://localhost:9090/ws?id=${id}&scope=1`
 
   const h = new HandshakeApi(url)
+  h.rtcConn.ondatachannel = (dcEvt) => {
+    console.log('RECEIVED DATA CHANNEL', dcEvt)
+    const recvChannel = dcEvt.channel
+
+    recvChannel.onmessage = (mesg) => console.log('RECV MESSAGE', mesg.data)
+  }
+
   // @ts-ignore
   window.h = h
+
 
   return h.receiveHandshake().then(() => dispatch(addHandshake(h)))
 }
