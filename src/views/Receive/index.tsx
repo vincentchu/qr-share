@@ -12,7 +12,6 @@ type SDPRouteProps = {
 }
 
 type ReceiveProps = {
-  connection: RTCPeerConnection
 } & RouteComponentProps<SDPRouteProps> & DispatchProp
 
 const Receive: React.SFC<ReceiveProps> = (props) => {
@@ -26,7 +25,6 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 
 const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   const {
-    connection,
     match: { params: { id } },
   } = props
 
@@ -42,7 +40,6 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
 
   // @ts-ignore
   window.h = h
-
 
   return h.receiveHandshake().then(() => dispatch(addHandshake(h)))
 }

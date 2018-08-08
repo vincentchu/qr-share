@@ -15,8 +15,8 @@ type HandshakeApiMessage = {
 type ScopeType = 'offer' | 'answer'
 
 class HandshakeApi {
-  ws: WebSocket
-  openMessages: { [id: string ]: () => void }
+  private ws: WebSocket
+  private openMessages: { [id: string ]: () => void }
 
   url: string
   id: string
@@ -34,7 +34,7 @@ class HandshakeApi {
     this.openMessages = {}
   }
 
-  onWsMessage = (mesgEvt: MessageEvent) => {
+  private onWsMessage = (mesgEvt: MessageEvent) => {
     const mesg: HandshakeApiMessage = JSON.parse(mesgEvt.data)
     console.log('onWsMessage: Received message', mesg)
 
@@ -62,7 +62,7 @@ class HandshakeApi {
     }
   }
 
-  wsSend = (mesg: HandshakeApiMessage): Promise<any> => {
+  private wsSend = (mesg: HandshakeApiMessage): Promise<any> => {
     return new Promise((resolve) => {
       this.openMessages[mesg.id] = resolve
 
@@ -70,7 +70,7 @@ class HandshakeApi {
     })
   }
 
-  handleOffer = (mesg: HandshakeApiMessage) => {
+  private handleOffer = (mesg: HandshakeApiMessage) => {
     const offer: RTCSessionDescriptionInit = JSON.parse(mesg.data)
     const maybeCallback = this.openMessages['offer']
     if (maybeCallback) {
@@ -92,7 +92,7 @@ class HandshakeApi {
       })
   }
 
-  handleAnswer = (mesg: HandshakeApiMessage) => {
+  private handleAnswer = (mesg: HandshakeApiMessage) => {
     const answer: RTCSessionDescriptionInit = JSON.parse(mesg.data)
     const maybeCallback = this.openMessages['answer']
 
@@ -105,15 +105,15 @@ class HandshakeApi {
     }
   }
 
-  handleCandidate = (mesg: HandshakeApiMessage) => {
+  private handleCandidate = (mesg: HandshakeApiMessage) => {
     const candidate: RTCIceCandidate = JSON.parse(mesg.data)
 
     console.log('handleCandidate: Received and adding ice candidate', candidate)
     this.peerConnection.addIceCandidate(candidate)
   }
 
-  onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {
-    console.log('RECV ice', iceEvt.candidate)
+  private onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {
+    console.log('onIceCandidate: Received candidate', iceEvt.candidate)
 
     if (iceEvt.candidate) {
       this.wsSend({
@@ -124,13 +124,13 @@ class HandshakeApi {
     }
   }
 
-  waitForAnswer = (): Promise<any> => {
+  private waitForAnswer = (): Promise<any> => {
     return new Promise((resolve) => {
       this.openMessages['answer'] = resolve
     })
   }
 
-  init = (): Promise<any> => {
+  private init = (): Promise<any> => {
     let tries = 0
     const openPromise = new Promise((resolve) => {
       const waitForReady = () => {
