@@ -4,12 +4,12 @@ const Config = {
   iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ],
 }
 
-type HandshakeApiMessageType = 'offer'
+type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer'
 
 type HandshakeApiMessage = {
   id: string
   mesgType: HandshakeApiMessageType
-  data: any
+  data: string
 }
 
 class HandshakeApi {
@@ -40,15 +40,41 @@ class HandshakeApi {
       return
     }
 
-    // handle message here
+    switch (mesg.mesgType) {
+      case 'offer':
+        return this.handleOffer
+
+      case 'answer':
+        break
+
+        default:
+          console.log('onWsMessage: Unexpected message type', mesg)
+    }
   }
 
   wsSend = (mesg: HandshakeApiMessage): Promise<any> => {
     return new Promise((resolve) => {
-      this.openMessages[mesg.id] = () => resolve()
+      this.openMessages[mesg.id] = resolve
 
       this.ws.send(JSON.stringify(mesg))
     })
+  }
+
+  handleOffer = (mesg: HandshakeApiMessage) => {
+    const offer: RTCSessionDescriptionInit = JSON.parse(mesg.data)
+
+    this.rtcConn.createAnswer()
+      .then((answer) => {
+        console.log('handleOffer: Setting local/remote description and sending answer')
+        this.rtcConn.setLocalDescription(answer)
+        this.rtcConn.setRemoteDescription(offer)
+
+        return this.wsSend({
+          id: uuid(),
+          mesgType: 'answer',
+          data: JSON.stringify(answer),
+        })
+      })
   }
 
   init = (): Promise<any> => {
@@ -69,22 +95,41 @@ class HandshakeApi {
     return openPromise
   }
 
+  // Called by the offerer to start handshake
   startHandshake = (): Promise<any> => {
     return this.init()
       .then(() => this.rtcConn.createOffer())
-      .then((offer) => this.wsSend({
-        id: uuid(),
-        mesgType: 'offer',
-        data: JSON.stringify(offer),
-      }))
+      .then((offer) => {
+        this.rtcConn.setLocalDescription(offer)
 
+        return this.wsSend({
+          id: uuid(),
+          mesgType: 'offer',
+          data: JSON.stringify(offer),
+        })
+      })
+      .then(this.waitForAnswer)
+  }
 
+  // Called by the answerer to initiate receipt of offer
+  receiveHandshake = (): Promise<any> => {
+    const recvOfferPromise = new Promise((resolve) => {
+      this.openMessages['offer'] = resolve
+    })
 
+    const sendGetOfferPromise = this.wsSend({
+      id: uuid(),
+      mesgType: 'get-offer',
+      data: '',
+    })
 
-    // return Promise.all([ this.rtcConn.createOffer(), this.init() ])
-    //   .then(([ offer ]) => {})
+    return Promise.all([ sendGetOfferPromise, recvOfferPromise ])
+  }
 
-
+  waitForAnswer = (): Promise<any> => {
+    return new Promise((resolve) => {
+      this.openMessages['answer'] = resolve
+    })
   }
 }
 
