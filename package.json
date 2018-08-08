@@ -25,6 +25,7 @@
     "@types/reactstrap": "^5.0.27",
     "@types/redux-form": "^7.2.6",
     "@types/redux-logger": "^3.0.6",
+    "@types/uuid": "^3.4.3",
     "@types/webrtc": "^0.0.23",
     "bootstrap": "^4.1.1",
     "classnames": "^2.2.6",
@@ -46,7 +47,8 @@
     "redux-logger": "^3.0.6",
     "reflect-metadata": "^0.1.12",
     "style-loader": "^0.21.0",
-    "svg-url-loader": "^2.3.2"
+    "svg-url-loader": "^2.3.2",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "autoprefixer": "^8.6.2",
