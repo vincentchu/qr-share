@@ -1,55 +1,40 @@
 import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
 
-import { ConnectionState, addOffer } from '../../state/connection'
-import { urlForOffer, startHandshake } from '../../conn-utils'
+import HandshakeApi from '../../handshake-api'
+import { ConnectionState, addHandshake } from '../../state/connection'
 
 type ChatProps = {
-  connection?: RTCPeerConnection
-  offer?: RTCSessionDescriptionInit
+  handshake?: HandshakeApi
 } & DispatchProp
 
 const Chat: React.SFC<ChatProps> = (props) => {
-  const { offer, connection, dispatch } = props
-  const url = offer && `http://localhost:8080/recv/foo`
+  const { handshake, dispatch } = props
+
+  const id = 'foobar'
+  const url = `http://localhost:8080/recv/${id}`
 
   const onClick = () => {
-    console.log('Creating offer')
-
-    const sendChannel = connection.createDataChannel('send')
-    sendChannel.onopen = () => console.log('DATA CHANNEL OPEN')
-    sendChannel.onclose = () => console.log('DATA CHANNEL CLOSE')
-
+    console.log('Starting Handshake')
+    const h = new HandshakeApi(`ws://localhost:9090/ws?id=${id}&scope=0`)
     // @ts-ignore
-    window.sendChannel = sendChannel
+    window.h = h
 
-
-    startHandshake(connection, "foo").then((handshake) => {
-      const { offer, websocketApi } = handshake
-
-      dispatch(addOffer(offer))
-      return websocketApi.waitForAnswer().then((answer) => {
-        console.log('Received answer from remote:', answer)
-        connection.setRemoteDescription(answer)
-      })
-    })
+    h.startHandshake()
+    dispatch(addHandshake(h))
   }
 
   return (
     <div>
       <h1>Chat</h1>
 
-      { !offer && <button onClick={onClick}>Start Chat</button> }
+      { !handshake && <button onClick={onClick}>Start Chat</button> }
 
-      { offer && (
+      { handshake && (
         <div>
           <h4>Created Offer</h4>
           <ul>
-            <li>SDP: { offer.sdp }</li>
-            <li>Type: { offer.type }</li>
-            <li>
               <a href={url} target="_blank">{ url }</a>
-            </li>
           </ul>
         </div>
       ) }
@@ -60,12 +45,9 @@ const Chat: React.SFC<ChatProps> = (props) => {
 const mapStateToProps = (state: {
   connection: ConnectionState
 }) => {
-  const { connection, offer } = state.connection
+  const { handshake } = state.connection
 
-  return {
-    connection,
-    offer,
-  }
+  return { handshake }
 }
 
 export default connect(mapStateToProps)(Chat)

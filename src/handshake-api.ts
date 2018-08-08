@@ -42,7 +42,7 @@ class HandshakeApi {
 
     switch (mesg.mesgType) {
       case 'offer':
-        return this.handleOffer
+        return this.handleOffer(mesg)
 
       case 'answer':
         break
@@ -63,11 +63,11 @@ class HandshakeApi {
   handleOffer = (mesg: HandshakeApiMessage) => {
     const offer: RTCSessionDescriptionInit = JSON.parse(mesg.data)
 
+    this.rtcConn.setRemoteDescription(offer)
     this.rtcConn.createAnswer()
       .then((answer) => {
         console.log('handleOffer: Setting local/remote description and sending answer')
         this.rtcConn.setLocalDescription(answer)
-        this.rtcConn.setRemoteDescription(offer)
 
         return this.wsSend({
           id: uuid(),
@@ -117,11 +117,12 @@ class HandshakeApi {
       this.openMessages['offer'] = resolve
     })
 
-    const sendGetOfferPromise = this.wsSend({
-      id: uuid(),
-      mesgType: 'get-offer',
-      data: '',
-    })
+    const sendGetOfferPromise = this.init()
+      .then(() => this.wsSend({
+        id: uuid(),
+        mesgType: 'get-offer',
+        data: '',
+      }))
 
     return Promise.all([ sendGetOfferPromise, recvOfferPromise ])
   }

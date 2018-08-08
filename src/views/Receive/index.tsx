@@ -4,8 +4,8 @@ import { Dispatch } from 'redux'
 import { connect, DispatchProp } from 'react-redux'
 
 import loadingComponent from '../loading-component'
-import { ConnectionState, addAnswer } from '../../state/connection'
-import { decodeOffer, receiveHandshake } from '../../conn-utils'
+import HandshakeApi from '../../handshake-api'
+import { ConnectionState, addHandshake } from '../../state/connection'
 
 type SDPRouteProps = {
   id: string
@@ -30,13 +30,17 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
     match: { params: { id } },
   } = props
 
-  return receiveHandshake(connection, id).then(({ websocketApi, answer }) => {
-    dispatch(addAnswer(answer))
-  })
+  const url = `ws://localhost:9090/ws?id=${id}&scope=1`
+
+  const h = new HandshakeApi(url)
+  // @ts-ignore
+  window.h = h
+
+  return h.receiveHandshake().then(() => dispatch(addHandshake(h)))
 }
 
 const mapStateToProps = (state: {
   connection: ConnectionState
-}) => ({ connection: state.connection.connection })
+}) => ({ handshake: state.connection.handshake })
 
 export default connect(mapStateToProps)(loadingComponent(loader, Receive))

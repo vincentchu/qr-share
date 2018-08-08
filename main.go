@@ -150,12 +150,15 @@ func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message 
 		return err
 	}
 
+	_ = partner
+	_ = partnerOk
+
 	switch message.MesgType {
 	case "offer":
 		handler.Offer(id, scope, message)
 
 	case "get-offer":
-		handler.GetOffer(id, scope, partner, partnerOk)
+		handler.GetOffer(id, scope, sender, senderOk)
 	}
 
 	if senderOk {
@@ -175,15 +178,15 @@ func (handler *ConnectionHandler) Offer(id Id, scope ScopeType, message Handshak
 	handler.mutex.Unlock()
 }
 
-func (handler *ConnectionHandler) GetOffer(id Id, scope ScopeType, partner *websocket.Conn, partnerOk bool) {
+func (handler *ConnectionHandler) GetOffer(id Id, scope ScopeType, requester *websocket.Conn, requesterOk bool) {
 	offerBytes, offerOk := handler.offers[id]
 	if !offerOk {
 		logger.Printf("%s/%d: GetOffer: offer not present", id, scope)
 		return
 	}
 
-	if !partnerOk {
-		logger.Printf("%s/%d: GetOffer: partner not present", id, scope)
+	if !requesterOk {
+		logger.Printf("%s/%d: GetOffer: requester not present, unexpected", id, scope)
 		return
 	}
 
@@ -194,8 +197,8 @@ func (handler *ConnectionHandler) GetOffer(id Id, scope ScopeType, partner *webs
 		return
 	}
 
-	logger.Printf("%s/%d: GetOffer Sending offer to partner", id, scope)
-	partner.WriteJSON(offer)
+	logger.Printf("%s/%d: GetOffer Sending offer to requester", id, scope)
+	requester.WriteJSON(offer)
 }
 
 // func (handler *ConnectionHandler) UpdateAnswer(id Id, scope ScopeType, message Message) {
