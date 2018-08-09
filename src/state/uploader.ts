@@ -8,15 +8,12 @@ export type ReadyState = 'not-ready' | 'ready'
 export type UploaderState = {
   files: ImageFile[]
   dataChannelState: ReadyState
-  handshakeState: ReadyState
-  dataChannel?: RTCDataChannel
   handshakeApi?: HandshakeApi
 }
 
 const InitialState: UploaderState = {
   files: [],
   dataChannelState: 'not-ready',
-  handshakeState: 'not-ready',
 }
 
 const ADD_FILES = 'state-uploader/ADD_FILES'
@@ -27,8 +24,7 @@ type AddFiles = {
   files: ImageFile[]
 } & Action<string>
 
-type UpdateHandshakeData = {
-  dataChannel: RTCDataChannel,
+type UpdateHandshake = {
   handshakeApi: HandshakeApi
 } & Action<string>
 
@@ -38,7 +34,7 @@ type ChangeDataReady = {
 
 export const reducer: Reducer<UploaderState, AnyAction> = (
   state: UploaderState = InitialState,
-  action: AddFiles | UpdateHandshakeData | ChangeDataReady
+  action: AddFiles | UpdateHandshake | ChangeDataReady
 ) => {
   switch (action.type) {
     case ADD_FILES: {
@@ -51,11 +47,10 @@ export const reducer: Reducer<UploaderState, AnyAction> = (
     }
 
     case UPDATE_HANDSHAKE_DATA: {
-      const { dataChannel, handshakeApi } = <UpdateHandshakeData>action
+      const { handshakeApi } = <UpdateHandshake>action
 
       return {
         ...state,
-        dataChannel,
         handshakeApi,
       }
     }
@@ -79,10 +74,9 @@ export const addFiles: ActionCreator<AddFiles> = (files: ImageFile[]) => ({
   files,
 })
 
-export const updateHandshakeData: ActionCreator<UpdateHandshakeData> = (handshakeApi: HandshakeApi, dataChannel: RTCDataChannel) => ({
+export const updateHandshakeData: ActionCreator<UpdateHandshake> = (handshakeApi: HandshakeApi) => ({
   type: UPDATE_HANDSHAKE_DATA,
   handshakeApi,
-  dataChannel,
 })
 
 export const changeDataReady: ActionCreator<ChangeDataReady> = (dataChannelState: ReadyState) => ({

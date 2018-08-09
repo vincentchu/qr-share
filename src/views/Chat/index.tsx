@@ -4,8 +4,9 @@ import Dropzone, { ImageFile } from 'react-dropzone'
 import * as uuid from 'uuid/v1'
 import * as QRCode from 'qrcode.react'
 
+import { sendFiles } from './file-sender'
 import HandshakeApi from '../../handshake-api'
-import { UploaderState, addFiles, updateHandshakeData, changeDataReady } from '../../state/uploader'
+import { UploaderState, addFiles, updateHandshakeData } from '../../state/uploader'
 
 type ChatProps = {
   id?: string
@@ -20,14 +21,11 @@ const Chat: React.SFC<ChatProps> = (props) => {
 
   const onDrop = (files: ImageFile[]) => {
     const handshakeApi = new HandshakeApi('ws://localhost:9090/ws', uuid(), 'offer')
-    const dataChannel = handshakeApi.peerConnection.createDataChannel('files')
-    dataChannel.onclose = () => dispatch(changeDataReady('not-ready'))
-    dataChannel.onopen = () => {
-      dispatch(changeDataReady('ready'))
-    }
+
+    sendFiles(files, handshakeApi.peerConnection, dispatch)
 
     dispatch(addFiles(files))
-    dispatch(updateHandshakeData(handshakeApi, dataChannel))
+    dispatch(updateHandshakeData(handshakeApi))
 
     handshakeApi.startHandshake().then(() => console.log('Handshake Done!'))
   }
