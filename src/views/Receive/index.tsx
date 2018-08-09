@@ -5,7 +5,6 @@ import { connect, DispatchProp } from 'react-redux'
 
 import loadingComponent from '../loading-component'
 import HandshakeApi from '../../handshake-api'
-import { ConnectionState, addHandshake } from '../../state/connection'
 
 type SDPRouteProps = {
   id: string
@@ -41,11 +40,11 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   // @ts-ignore
   window.h = h
 
-  return h.receiveHandshake().then(() => dispatch(addHandshake(h)))
+  return h.receiveHandshake()
 }
 
-const mapStateToProps = (state: {
-  connection: ConnectionState
-}) => ({ handshake: state.connection.handshake })
+// const mapStateToProps = (state: {
+//   connection: ConnectionState
+// }) => ({ handshake: state.connection.handshake })
 
-export default connect(mapStateToProps)(loadingComponent(loader, Receive))
+export default connect()(loadingComponent(loader, Receive))

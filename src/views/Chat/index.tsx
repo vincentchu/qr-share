@@ -1,65 +1,72 @@
 import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
+import Dropzone, { ImageFile } from 'react-dropzone'
+import * as uuid from 'uuid/v1'
 
 import HandshakeApi from '../../handshake-api'
-import { ConnectionState, addHandshake } from '../../state/connection'
+import { UploaderState, addFiles, updateHandshakeData, changeDataReady } from '../../state/uploader'
 
 type ChatProps = {
-  handshake?: HandshakeApi
+  id?: string
+  files: ImageFile[]
 } & DispatchProp
 
 const Chat: React.SFC<ChatProps> = (props) => {
-  const { handshake, dispatch } = props
+  const { id, files, dispatch } = props
+  console.log("HERE", id)
 
-  const id = 'foobar'
-  const url = `http://localhost:8080/recv/${id}`
+  const url = id && `http://localhost:8080/recv/${id}`
 
-  const onClick = () => {
-    console.log('Starting Handshake')
-    const h = new HandshakeApi('ws://localhost:9090/ws', id, 'offer')
-    // @ts-ignore
-    window.h = h
+  const onDrop = (files: ImageFile[]) => {
+    const handshakeApi = new HandshakeApi('ws://localhost:9090/ws', uuid(), 'offer')
+    const dataChannel = handshakeApi.peerConnection.createDataChannel('files')
+    dataChannel.onclose = () => dispatch(changeDataReady('not-ready'))
+    dataChannel.onopen = () => {
+      dispatch(changeDataReady('ready'))
+    }
 
-    const dc = h.peerConnection.createDataChannel('foo')
-    dc.onopen = () => console.log('DC OPEN')
-    dc.onclose = () => console.log('DC CLOSE')
+    dispatch(addFiles(files))
+    dispatch(updateHandshakeData(handshakeApi, dataChannel))
 
-    // @ts-ignore
-    window.dc = dc
-
-
-    h.startHandshake().then(() => {
-      console.log('Handshake Done')
-    })
-
-
-    dispatch(addHandshake(h))
+    handshakeApi.startHandshake().then(() => console.log('Handshake Done!'))
   }
 
   return (
     <div>
-      <h1>Chat</h1>
+      <h1>QR Share</h1>
 
-      { !handshake && <button onClick={onClick}>Start Chat</button> }
+      <div className="dropzone">
+        <Dropzone onDrop={onDrop}>
+          This is the dropzone
+        </Dropzone>
+      </div>
 
-      { handshake && (
-        <div>
-          <h4>Created Offer</h4>
-          <ul>
-              <a href={url} target="_blank">{ url }</a>
-          </ul>
-        </div>
-      ) }
+      <div>
+        Link: <a href={url} target="_blank">{ url }</a>
+      </div>
+
+      <div>
+        <h3>Files</h3>
+        <ul>
+          { files.map((file) => (
+            <li key={file.name}>
+              { file.name }
+              { file.preview && <img height="100px" width="100px" src={file.preview} /> }
+            </li>
+          )) }
+        </ul>
+      </div>
     </div>
   )
 }
 
 const mapStateToProps = (state: {
-  connection: ConnectionState
+  uploader: UploaderState,
 }) => {
-  const { handshake } = state.connection
+  const { files, handshakeApi } = state.uploader
+  const id = handshakeApi && handshakeApi.id
 
-  return { handshake }
+  return { id, files }
 }
 
 export default connect(mapStateToProps)(Chat)

@@ -27,6 +27,9 @@ class HandshakeApi {
     const scopeVal = scope === 'offer' ? 0 : 1
 
     this.url = `${baseUrl}?id=${id}&scope=${scopeVal}`
+    this.id = id
+    this.scope = scope
+
     this.ws = new WebSocket(this.url)
     this.ws.onmessage = this.onWsMessage
 
