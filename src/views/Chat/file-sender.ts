@@ -12,7 +12,15 @@ export const sendFiles = (files: ImageFile[], peerConnection: RTCPeerConnection,
   data.onopen = () => {
     dispatch(changeDataReady('ready'))
 
-    files.forEach((file) => sendFile(file, data, dispatch))
+    const sender = (idx: number): Promise<any> => {
+      if (idx < files.length ) {
+        return sendFile(files[idx], data, dispatch).then(() => sender(idx + 1))
+      } else {
+        return Promise.resolve(1)
+      }
+    }
+
+    sender(0)
   }
 }
 
@@ -31,7 +39,8 @@ const streamChunk = (file: ImageFile, offset: number, data: RTCDataChannel, disp
   })
 }
 
-const sendFile = (file: ImageFile, data: RTCDataChannel, dispatch: Dispatch) => {
+const sendFile = (file: ImageFile, data: RTCDataChannel, dispatch: Dispatch): Promise<any> => {
+  console.log('sendFile: starting stream', file.name, file.size)
   data.send(JSON.stringify({
     action: 'start',
     name: file.name,
@@ -41,18 +50,18 @@ const sendFile = (file: ImageFile, data: RTCDataChannel, dispatch: Dispatch) => 
     lastModified: file.lastModified,
   }))
 
-  console.log('STREAMING FILE', file.size, file.name)
   const streamer = (offset: number): Promise<any> => {
     if (offset > file.size) {
-      console.log('OFFSET reached', offset, file.size)
+      console.log('sendFile: finished streaming')
       return Promise.resolve()
     } else {
-      console.log('RECURSING', offset)
+      console.log('sendFile: sending next chunk', offset)
       return streamChunk(file, offset, data, dispatch).then(() => streamer(offset + ChunkSize))
     }
   }
-  streamer(0).then(() => {
-    console.log('STRAM DONE')
+
+  return streamer(0).then(() => {
+    console.log('sendFile: Finished sending', file.name)
     data.send(JSON.stringify({ action: 'end' }))
   })
 }
