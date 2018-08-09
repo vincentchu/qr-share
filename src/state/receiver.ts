@@ -4,10 +4,10 @@ export type FileStub = {
   lastModified: number
   name: string
   size: number
+  type?: string
 }
 
 export type FileStore = {
-  metadata: FileStub
   bytesReceived: number
   buffer: ArrayBuffer[]
 }
@@ -15,24 +15,40 @@ export type FileStore = {
 const keyFor = (stub: FileStub): string => [ stub.name, stub.size, stub.lastModified ].join('/')
 
 const emptyFileStore = (metadata: FileStub): FileStore => ({
-  metadata,
   bytesReceived: 0,
   buffer: [],
 })
 
-const updateFileStore = (fileStore: FileStore, chunk: ArrayBuffer): FileStore => {
-  return fileStore
+const updateTransfer = (currentTransfer: FileStore, chunk: ArrayBuffer): FileStore => ({
+  bytesReceived: currentTransfer.bytesReceived + chunk.byteLength,
+  buffer: currentTransfer.buffer.concat([ chunk ])
+})
+
+const completedFile = (currentFile: FileStub, currentTransfer: FileStore): File => {
+  if (currentFile.size !== currentTransfer.bytesReceived) {
+    throw new Error(`Received bytes note equal to file size ${currentTransfer.bytesReceived} != ${currentFile.size}`)
+  }
+
+  const blob = new Blob(currentTransfer.buffer)
+  const props = {
+    type: currentFile.type,
+    lastModified: currentFile.lastModified,
+
+  }
+
+  return new File([ blob ], currentFile.name, props)
 }
 
 export type ReceiverState = {
   currentFile?: FileStub
-  files: {
-    [ key: string ]: FileStore
+  currentTransfer?: FileStore
+  completedFiles: {
+    [ key: string ]: File
   }
 }
 
 const InitialState: ReceiverState = {
-  files: {}
+  completedFiles: {}
 }
 
 const START_FILE = 'state-receiver/START_FILE'
@@ -56,33 +72,43 @@ export const reducer: Reducer<ReceiverState, AnyAction> = (
   switch (action.type) {
     case START_FILE: {
       const { currentFile } = <StartFileAction>action
+      const currentTransfer = emptyFileStore(currentFile)
 
       return {
         ...state,
         currentFile,
+        currentTransfer,
       }
     }
 
-    case END_FILE:
+    case END_FILE: {
+      const { currentFile, currentTransfer, completedFiles } = state
+
+      const key = keyFor(currentFile)
+      const file = completedFile(currentFile, currentTransfer)
+
+      const updatedFiles = {
+        ...completedFiles,
+        [ key ]: file,
+      }
+
       return {
         ...state,
+        completedFiles: updatedFiles,
         currentFile: undefined,
+        currentTransfer: undefined,
       }
+    }
 
     case ADD_CHUNK: {
       const { chunk } = <AddChunkAction>action
 
-      const { currentFile } = state
-      const key = keyFor(currentFile)
-      const currentFileStore = state.files[key] || emptyFileStore(currentFile)
-      const updatedStore = updateFileStore(currentFileStore, chunk)
+      const { currentTransfer } = state
+      const updatedTransfer = updateTransfer(currentTransfer, chunk)
 
       return {
         ...state,
-        files: {
-          ...state.files,
-          [ key ]: updatedStore,
-        }
+        currentTransfer: updatedTransfer,
       }
     }
 
