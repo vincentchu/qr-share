@@ -1,4 +1,4 @@
-import { Action, ActionCreator, Reducer, AnyAction, ActionCreatorsMapObject } from 'redux'
+import { Action, ActionCreator, Reducer, AnyAction } from 'redux'
 import { ImageFile } from 'react-dropzone'
 
 import HandshakeApi from '../handshake-api'

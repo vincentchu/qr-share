@@ -15,8 +15,6 @@ type ChatProps = {
 
 const Chat: React.SFC<ChatProps> = (props) => {
   const { id, files, dispatch } = props
-  console.log("HERE", id)
-
   const url = id && `http://localhost:8080/recv/${id}`
 
   const onDrop = (files: ImageFile[]) => {

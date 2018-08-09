@@ -5,8 +5,10 @@ import { changeDataReady } from '../../state/uploader'
 
 const ChunkSize = 16384
 
+export const DataChannelName = 'files'
+
 export const sendFiles = (files: ImageFile[], peerConnection: RTCPeerConnection, dispatch: Dispatch) => {
-  const data = peerConnection.createDataChannel('foo')
+  const data = peerConnection.createDataChannel(DataChannelName)
   data.binaryType = 'arraybuffer'
   data.onclose = () => dispatch(changeDataReady('not-ready'))
   data.onopen = () => {

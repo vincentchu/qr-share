@@ -3,6 +3,7 @@ import { RouteComponentProps } from 'react-router'
 import { Dispatch } from 'redux'
 import { connect, DispatchProp } from 'react-redux'
 
+import { receiveFiles } from './file-receiver'
 import loadingComponent from '../loading-component'
 import HandshakeApi from '../../handshake-api'
 
@@ -30,12 +31,7 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   const url = 'ws://localhost:9090/ws'
 
   const h = new HandshakeApi(url, id, 'answer')
-  h.peerConnection.ondatachannel = (dcEvt) => {
-    console.log('RECEIVED DATA CHANNEL', dcEvt)
-    const recvChannel = dcEvt.channel
-
-    recvChannel.onmessage = (mesg) => console.log('RECV MESSAGE', mesg.data)
-  }
+  receiveFiles(h.peerConnection, dispatch)
 
   // @ts-ignore
   window.h = h
