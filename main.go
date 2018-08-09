@@ -260,11 +260,17 @@ func handshake(writer http.ResponseWriter, reader *http.Request) {
 }
 
 func main() {
-	addr := flag.String("addr", "localhost:9090", "Server port to listen on")
+	addr := flag.String("addr", "", "Server port to listen on")
 	flag.Parse()
 
-	logger.Printf("Listening on address: %s", *addr)
-	http.HandleFunc("/ws", handshake)
+	port := os.Getenv("PORT")
+	if *addr != "" {
+		port = *addr
+	}
 
-	logger.Fatal(http.ListenAndServe(*addr, nil))
+	address := fmt.Sprintf("localhost:%s", port)
+	logger.Printf("Listening on address: %s", address)
+
+	http.HandleFunc("/ws", handshake)
+	logger.Fatal(http.ListenAndServe(address, nil))
 }
