@@ -2,6 +2,7 @@ import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
 import Dropzone, { ImageFile } from 'react-dropzone'
 import * as uuid from 'uuid/v1'
+import * as QRCode from 'qrcode.react'
 
 import HandshakeApi from '../../handshake-api'
 import { UploaderState, addFiles, updateHandshakeData, changeDataReady } from '../../state/uploader'
@@ -42,7 +43,11 @@ const Chat: React.SFC<ChatProps> = (props) => {
       </div>
 
       <div>
-        Link: <a href={url} target="_blank">{ url }</a>
+        <p>
+          Link: <a href={url} target="_blank">{ url }</a>
+        </p>
+
+        { url && <p><QRCode value={url} level="Q" size={200} /></p> }
       </div>
 
       <div>
