@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux'
 
-import { DataChannelName } from '../Chat/file-sender'
+import { DataChannelName } from '../Send/file-sender'
 import { startFile, endFile, addChunk } from '../../state/receiver'
 
 type ActionMessage = {

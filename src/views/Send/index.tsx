@@ -8,12 +8,12 @@ import { sendFiles } from './file-sender'
 import HandshakeApi from '../../handshake-api'
 import { UploaderState, addFiles, updateHandshakeData } from '../../state/uploader'
 
-type ChatProps = {
+type SendProps = {
   id?: string
   files: ImageFile[]
 } & DispatchProp
 
-const Chat: React.SFC<ChatProps> = (props) => {
+const Send: React.SFC<SendProps> = (props) => {
   const { id, files, dispatch } = props
   const url = id && `http://localhost:8080/recv/${id}`
 
@@ -70,4 +70,4 @@ const mapStateToProps = (state: {
   return { id, files }
 }
 
-export default connect(mapStateToProps)(Chat)
+export default connect(mapStateToProps)(Send)
