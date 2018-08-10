@@ -53,7 +53,7 @@ const Send: React.SFC<SendProps> = (props) => {
           { files.map((file) => (
             <li key={file.name}>
               { file.name }
-              { file.preview && <img height="100px" width="100px" src={file.preview} /> }
+              { file.preview && <img height="150px" width="150px" src={file.preview} /> }
             </li>
           )) }
         </ul>

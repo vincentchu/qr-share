@@ -4,6 +4,7 @@ import { Dispatch } from 'redux'
 import { connect, DispatchProp } from 'react-redux'
 
 import { receiveFiles } from './file-receiver'
+import FileWithPreview from './FileWithPreview'
 import loadingComponent from '../loading-component'
 import { WebsocketUrl } from '../url-helper'
 import HandshakeApi from '../../handshake-api'
@@ -40,9 +41,7 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 
         <ul>
           { files.map((file) => (
-            <li key={file.name}>
-              { file.name }
-            </li>
+            <FileWithPreview file={file} />
           )) }
         </ul>
       </div>
