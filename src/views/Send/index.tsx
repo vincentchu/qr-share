@@ -31,7 +31,7 @@ const Send: React.SFC<SendProps> = (props) => {
 
   return (
     <div>
-      <h1>QR Share</h1>
+      <h1>QR Share { window.VERSION }</h1>
 
       <div className="dropzone">
         <Dropzone onDrop={onDrop}>

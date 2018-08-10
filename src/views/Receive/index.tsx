@@ -27,7 +27,7 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 
   return (
     <div>
-      <h1>Receive Share</h1>
+      <h1>Receive Share { window.VERSION }</h1>
 
       { currentTransfer && currentFile && (
         <div>

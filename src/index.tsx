@@ -9,6 +9,12 @@ import App from './App'
 import Send from './views/Send'
 import Receive from './views/Receive'
 
+declare global {
+  interface Window {
+    VERSION: string,
+  }
+}
+
 render(
   <Provider store={store}>
     <BrowserRouter>

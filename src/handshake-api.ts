@@ -56,7 +56,7 @@ class HandshakeApi {
     this.ws = new WebSocket(this.url)
     this.ws.onmessage = this.onWsMessage
 
-    this.peerConnection = new RTCPeerConnection(Config2)
+    this.peerConnection = new RTCPeerConnection(Config)
     this.openMessages = {}
 
     // @ts-ignore
