@@ -53,7 +53,6 @@ const (
 type ConnectionHandler struct {
 	mutex       sync.RWMutex
 	offers      map[Id][]byte
-	answers     map[Id]string
 	offerConns  map[Id]*websocket.Conn
 	answerConns map[Id]*websocket.Conn
 }
@@ -117,7 +116,6 @@ func (handler *ConnectionHandler) CloseConnection(scope ScopeType, id Id, conn *
 
 	logger.Printf("%s/%d: Deleting keys", id, scope)
 	delete(handler.offers, id)
-	delete(handler.answers, id)
 	delete(handler.offerConns, id)
 	delete(handler.answerConns, id)
 
@@ -236,7 +234,6 @@ var upgrader = websocket.Upgrader{
 
 var connHandler = ConnectionHandler{
 	offers:      make(map[Id][]byte, DefaultCapacity),
-	answers:     make(map[Id]string, DefaultCapacity),
 	offerConns:  make(map[Id]*websocket.Conn, DefaultCapacity),
 	answerConns: make(map[Id]*websocket.Conn, DefaultCapacity),
 }
