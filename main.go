@@ -268,7 +268,7 @@ func main() {
 		port = *addr
 	}
 
-	address := fmt.Sprintf("localhost:%s", port)
+	address := fmt.Sprintf(":%s", port)
 	logger.Printf("Listening on address: %s", address)
 
 	http.HandleFunc("/ws", handshake)
