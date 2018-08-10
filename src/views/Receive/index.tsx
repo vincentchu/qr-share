@@ -5,6 +5,7 @@ import { connect, DispatchProp } from 'react-redux'
 
 import { receiveFiles } from './file-receiver'
 import loadingComponent from '../loading-component'
+import { WebsocketUrl } from '../url-helper'
 import HandshakeApi from '../../handshake-api'
 import { ReceiverState, FileStore, FileStub } from '../../state/receiver'
 
@@ -54,11 +55,10 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
     match: { params: { id } },
   } = props
 
-  const url = 'ws://localhost:9090/ws'
-  const h = new HandshakeApi(url, id, 'answer')
-  receiveFiles(h.peerConnection, dispatch)
+  const handshakeApi = new HandshakeApi(WebsocketUrl, id, 'answer')
+  receiveFiles(handshakeApi.peerConnection, dispatch)
 
-  return h.receiveHandshake()
+  return handshakeApi.receiveHandshake()
 }
 
 const mapStateToProps = (state: {

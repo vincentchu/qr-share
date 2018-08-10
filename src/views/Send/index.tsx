@@ -5,6 +5,7 @@ import * as uuid from 'uuid/v1'
 import * as QRCode from 'qrcode.react'
 
 import { sendFiles } from './file-sender'
+import { urlForReceive, WebsocketUrl } from '../url-helper'
 import HandshakeApi from '../../handshake-api'
 import { UploaderState, addFiles, updateHandshakeData } from '../../state/uploader'
 
@@ -15,10 +16,10 @@ type SendProps = {
 
 const Send: React.SFC<SendProps> = (props) => {
   const { id, files, dispatch } = props
-  const url = id && `http://localhost:8080/recv/${id}`
+  const url = id && urlForReceive(id)
 
   const onDrop = (files: ImageFile[]) => {
-    const handshakeApi = new HandshakeApi('ws://localhost:9090/ws', uuid(), 'offer')
+    const handshakeApi = new HandshakeApi(WebsocketUrl, uuid(), 'offer')
 
     sendFiles(files, handshakeApi.peerConnection, dispatch)
 
