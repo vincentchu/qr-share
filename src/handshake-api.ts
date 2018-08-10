@@ -6,9 +6,9 @@ const Config = {
 
 const Config2 = {
   iceServers: [
-    {
-      urls: "stun:global.stun.twilio.com:3478?transport=udp"
-    },
+    // {
+    //   urls: "stun:global.stun.twilio.com:3478?transport=udp"
+    // },
     {
       urls: "turn:global.turn.twilio.com:3478?transport=udp",
       username: "a0dfde316ac9187e920eb4785571c3f03efbaac773e9790ffa3db178404f8bc9",
