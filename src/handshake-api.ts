@@ -35,6 +35,9 @@ class HandshakeApi {
 
     this.peerConnection = new RTCPeerConnection(Config)
     this.openMessages = {}
+
+    // @ts-ignore
+    window.pc = this.peerConnection
   }
 
   private onWsMessage = (mesgEvt: MessageEvent) => {
@@ -113,6 +116,8 @@ class HandshakeApi {
 
     console.log('handleCandidate: Received and adding ice candidate', candidate)
     this.peerConnection.addIceCandidate(candidate)
+      .then(() => console.log('handleCandidate: Added ice candidate', candidate))
+      .catch((err) => console.log('handleCandidate: error adding ice candidate', err, candidate))
   }
 
   private onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {

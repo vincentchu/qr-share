@@ -12,7 +12,6 @@ type ActionMessage = {
   lastModified?: number
 }
 
-
 export const receiveFiles = (peerConnection: RTCPeerConnection, dispatch: Dispatch) => {
   peerConnection.ondatachannel = (evt) => {
     const { channel } = evt
