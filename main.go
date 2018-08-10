@@ -23,20 +23,6 @@ type HandshakeApiMessage struct {
 	Data     string `json:"data"`
 }
 
-type MessageType int
-
-const (
-	UpdateOffer   MessageType = 0
-	UpdateAnswer  MessageType = 1
-	GetOffer      MessageType = 2
-	SendCandidate MessageType = 3
-)
-
-type Message struct {
-	mesgType MessageType
-	data     string
-}
-
 func parseMessage(msgStr string) (msg HandshakeApiMessage, err error) {
 	err = json.Unmarshal([]byte(msgStr), &msg)
 
@@ -53,6 +39,7 @@ const (
 type ConnectionHandler struct {
 	mutex       sync.RWMutex
 	offers      map[Id][]byte
+	candidates  map[Id][]HandshakeApiMessage
 	offerConns  map[Id]*websocket.Conn
 	answerConns map[Id]*websocket.Conn
 }
@@ -94,6 +81,17 @@ func (handler *ConnectionHandler) InitConnection(scope ScopeType, id Id, conn *w
 
 	case AnswerScope:
 		handler.answerConns[id] = conn
+		storedCandidates, ok := handler.candidates[id]
+		if ok {
+			logger.Printf("%s/%d: %d Stored candidates present, sending to partner", id, scope, len(storedCandidates))
+
+			for k := 0; k < len(storedCandidates); k++ {
+				logger.Printf("Sending candidate %d - %v", k, storedCandidates[k])
+				conn.WriteJSON(storedCandidates[k])
+			}
+			logger.Printf("Deleting")
+			delete(handler.candidates, id)
+		}
 	}
 
 	logger.Printf("%s/%d: Added connection to scope", id, scope)
@@ -116,6 +114,7 @@ func (handler *ConnectionHandler) CloseConnection(scope ScopeType, id Id, conn *
 
 	logger.Printf("%s/%d: Deleting keys", id, scope)
 	delete(handler.offers, id)
+	delete(handler.candidates, id)
 	delete(handler.offerConns, id)
 	delete(handler.answerConns, id)
 
@@ -214,7 +213,15 @@ func (handler *ConnectionHandler) GetOffer(id Id, scope ScopeType, requester *we
 
 func (handler *ConnectionHandler) Candidate(id Id, scope ScopeType, partner *websocket.Conn, partnerOk bool, message HandshakeApiMessage) {
 	if !partnerOk {
-		logger.Printf("%s/%d: Candidate - partner connection not found (unexpected)", id, scope)
+		logger.Printf("%s/%d: Candidate - partner connection not found, storing for later transmittal", id, scope)
+
+		handler.mutex.Lock()
+		defer handler.mutex.Unlock()
+
+		candidates := handler.candidates[id]
+		candidates = append(candidates, message)
+		handler.candidates[id] = candidates
+
 		return
 	}
 
@@ -234,6 +241,7 @@ var upgrader = websocket.Upgrader{
 
 var connHandler = ConnectionHandler{
 	offers:      make(map[Id][]byte, DefaultCapacity),
+	candidates:  make(map[Id][]HandshakeApiMessage, DefaultCapacity),
 	offerConns:  make(map[Id]*websocket.Conn, DefaultCapacity),
 	answerConns: make(map[Id]*websocket.Conn, DefaultCapacity),
 }
