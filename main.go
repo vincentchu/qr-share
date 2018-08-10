@@ -259,6 +259,10 @@ func handshake(writer http.ResponseWriter, reader *http.Request) {
 	}
 }
 
+func root(writer http.ResponseWriter, reader *http.Request) {
+	http.ServeFile(writer, reader, string(http.Dir("public/index.html")))
+}
+
 func main() {
 	addr := flag.String("addr", "", "Server port to listen on")
 	flag.Parse()
@@ -272,5 +276,10 @@ func main() {
 	logger.Printf("Listening on address: %s", address)
 
 	http.HandleFunc("/ws", handshake)
+
+	static := http.FileServer(http.Dir("public"))
+	http.Handle("/", static)
+	http.HandleFunc("/recv/", root)
+
 	logger.Fatal(http.ListenAndServe(address, nil))
 }
