@@ -4,6 +4,29 @@ const Config = {
   iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ],
 }
 
+const Config2 = {
+  iceServers: [
+    {
+      urls: "stun:global.stun.twilio.com:3478?transport=udp"
+    },
+    {
+      urls: "turn:global.turn.twilio.com:3478?transport=udp",
+      username: "a0dfde316ac9187e920eb4785571c3f03efbaac773e9790ffa3db178404f8bc9",
+      credential: "kozSq6UhtiFRZe3dEeHz2oIwROIZ9MuE+Ji6iuCqaKU="
+    },
+    {
+      urls: "turn:global.turn.twilio.com:3478?transport=tcp",
+      username: "a0dfde316ac9187e920eb4785571c3f03efbaac773e9790ffa3db178404f8bc9",
+      credential: "kozSq6UhtiFRZe3dEeHz2oIwROIZ9MuE+Ji6iuCqaKU="
+    },
+    {
+      urls: "turn:global.turn.twilio.com:443?transport=tcp",
+      username: "a0dfde316ac9187e920eb4785571c3f03efbaac773e9790ffa3db178404f8bc9",
+      credential: "kozSq6UhtiFRZe3dEeHz2oIwROIZ9MuE+Ji6iuCqaKU="
+    }
+  ]
+}
+
 type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate'
 
 type HandshakeApiMessage = {
@@ -33,7 +56,7 @@ class HandshakeApi {
     this.ws = new WebSocket(this.url)
     this.ws.onmessage = this.onWsMessage
 
-    this.peerConnection = new RTCPeerConnection(Config)
+    this.peerConnection = new RTCPeerConnection(Config2)
     this.openMessages = {}
 
     // @ts-ignore
