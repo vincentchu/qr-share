@@ -13,6 +13,10 @@ type ActionMessage = {
 }
 
 export const receiveFiles = (peerConnection: RTCPeerConnection, dispatch: Dispatch) => {
+  const foo = peerConnection.createDataChannel('foo')
+  foo.onopen = () => console.log('Foo is open')
+  foo.onclose = () => console.log('Foo is closed')
+
   peerConnection.ondatachannel = (evt) => {
     const { channel } = evt
 

@@ -24,6 +24,8 @@ export const sendFiles = (files: ImageFile[], peerConnection: RTCPeerConnection,
 
     sender(0)
   }
+
+  peerConnection.ondatachannel = (evt) => console.log('sendFiles: Received data channel', evt)
 }
 
 const streamChunk = (file: ImageFile, offset: number, data: RTCDataChannel, dispatch: Dispatch): Promise<any> => {

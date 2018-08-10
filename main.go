@@ -162,7 +162,7 @@ func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message 
 	}
 
 	if senderOk {
-		logger.Printf("%s/%d: Echoing back response to sender", id, scope)
+		logger.Printf("%s/%d: Echoing back response to sender (mesgId: %s)", id, scope, message.Id)
 		sender.WriteJSON(message)
 	}
 
