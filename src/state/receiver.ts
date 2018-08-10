@@ -1,11 +1,5 @@
 import { Action, ActionCreator, Reducer, AnyAction } from 'redux'
-
-export type FileStub = {
-  lastModified: number
-  name: string
-  size: number
-  type?: string
-}
+import { FileStub } from './shared'
 
 export type FileStore = {
   bytesReceived: number

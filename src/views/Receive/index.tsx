@@ -8,7 +8,8 @@ import FileWithPreview from './FileWithPreview'
 import loadingComponent from '../loading-component'
 import { WebsocketUrl } from '../url-helper'
 import HandshakeApi from '../../handshake-api'
-import { ReceiverState, FileStore, FileStub } from '../../state/receiver'
+import { ReceiverState, FileStore } from '../../state/receiver'
+import { FileStub } from '../../state/shared'
 
 type RouteProps = {
   id: string

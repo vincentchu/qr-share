@@ -1,6 +1,7 @@
 import { Action, ActionCreator, Reducer, AnyAction } from 'redux'
 import { ImageFile } from 'react-dropzone'
 
+import { FileStub } from './shared'
 import HandshakeApi from '../handshake-api'
 
 export type ReadyState = 'not-ready' | 'ready'
@@ -9,6 +10,7 @@ export type UploaderState = {
   files: ImageFile[]
   dataChannelState: ReadyState
   handshakeApi?: HandshakeApi
+  currentFile?: FileStub
 }
 
 const InitialState: UploaderState = {
