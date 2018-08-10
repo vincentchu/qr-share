@@ -138,19 +138,9 @@ class HandshakeApi {
     const candidate: RTCIceCandidate = JSON.parse(mesg.data)
 
     console.log('handleCandidate: Received and adding ice candidate', candidate)
-    const foo = () => {
-      console.log('handleCandidate: Calling addIceCandidate', candidate)
-      this.peerConnection.addIceCandidate(candidate)
-        .then(() => console.log('handleCandidate: Added ice candidate', candidate))
-        .catch((err) => console.log('handleCandidate: error adding ice candidate', err, candidate))
-    }
-
-    if (this.peerConnection.remoteDescription) {
-      foo()
-    } else {
-      console.log('handleCandidate: No remote description, pausing for 2 seconds')
-      setTimeout(foo, 2000)
-    }
+    this.peerConnection.addIceCandidate(candidate)
+      .then(() => console.log('handleCandidate: Added ice candidate', candidate))
+      .catch((err) => console.log('handleCandidate: error adding ice candidate', err, candidate))
   }
 
   private onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {
