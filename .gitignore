@@ -11,6 +11,7 @@ reports/
 pids/
 
 public/version.js
+public/index.html
 
 public/fonts
 public/bundle.js*

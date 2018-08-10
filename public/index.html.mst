@@ -9,6 +9,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="/bundle.js"></script>
+    <script src="/bundle.js?version={{ version }}"></script>
+    <script src="/version.js?version={{ version }}"></script>
   </body>
 </html>

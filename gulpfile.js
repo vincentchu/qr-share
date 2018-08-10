@@ -50,7 +50,11 @@ gulp.task('client:runServer', () => {
 
 gulp.task('client:buildjs', (cb) => webpack(webpackConfig, cb))
 
-gulp.task('client:copyRoot', () => {})
+gulp.task('client:copyRoot', () => {
+  const version = process.env['SOURCE_VERSION'] || exec('git rev-parse HEAD', { silent: true }).stdout.trim()
+  tmpl('public/version.js.mst', 'public/version.js', { version })
+  tmpl('public/index.html.mst', 'public/index.html', { version })
+})
 
 gulp.task('client:run', ['client:copyRoot', 'client:runServer'])
 gulp.task('client:build', ['client:copyRoot', 'client:buildjs'])
