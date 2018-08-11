@@ -74,7 +74,7 @@ class HandshakeApi {
 
         tries += 1
         const { remoteDescription } = this.peerConnection
-        if (remoteDescription.type.length > 0) {
+        if (remoteDescription && remoteDescription.type.length > 0) {
           return resolve()
         } else {
           return setTimeout(waiter, 500)
