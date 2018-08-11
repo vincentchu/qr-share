@@ -40,7 +40,7 @@ type ScopeType = 'offer' | 'answer'
 class HandshakeApi {
   private ws: WebSocket
   private openMessages: { [id: string ]: () => void }
-  private localRemoteSet: Promise<any>
+  private remoteSet: Promise<any>
 
   url: string
   id: string
@@ -59,25 +59,25 @@ class HandshakeApi {
     this.ws.onmessage = this.onWsMessage
 
     this.peerConnection = new RTCPeerConnection(Config2)
-    this.localRemoteSet = this.waitForLocalRemote()
+    this.remoteSet = this.waitForRemoteSet()
 
     // @ts-ignore
     window.pc = this.peerConnection
   }
 
-  private waitForLocalRemote = (): Promise<any> => {
+  private waitForRemoteSet = (): Promise<any> => {
     return new Promise((resolve) => {
       let tries = 0
 
       const waiter = () => {
-        console.log('waitForLocalRemote: Awaiting ready - try:', tries)
+        console.log('waitForRemoteSet: Awaiting ready - try:', tries)
 
         tries += 1
-        const { localDescription, remoteDescription } = this.peerConnection
-        if (localDescription.type.length > 0 && remoteDescription.type.length > 0) {
+        const { remoteDescription } = this.peerConnection
+        if (remoteDescription.type.length > 0) {
           return resolve()
         } else {
-          return setTimeout(waiter, 100)
+          return setTimeout(waiter, 500)
         }
       }
 
@@ -160,7 +160,7 @@ class HandshakeApi {
     const candidate: RTCIceCandidate = JSON.parse(mesg.data)
 
     console.log('handleCandidate: Received and adding ice candidate', candidate)
-    this.localRemoteSet.then(() => {
+    this.remoteSet.then(() => {
       console.log('handleCandidates: calling addIceCandidate', candidate)
       this.peerConnection.addIceCandidate(candidate)
         .then(() => console.log('handleCandidate: Added ice candidate', candidate))
