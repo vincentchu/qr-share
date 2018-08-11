@@ -40,6 +40,7 @@ type ScopeType = 'offer' | 'answer'
 class HandshakeApi {
   private ws: WebSocket
   private openMessages: { [id: string ]: () => void }
+  private localRemoteSet: Promise<any>
 
   url: string
   id: string
@@ -52,15 +53,36 @@ class HandshakeApi {
     this.url = `${baseUrl}?id=${id}&scope=${scopeVal}`
     this.id = id
     this.scope = scope
+    this.openMessages = {}
 
     this.ws = new WebSocket(this.url)
     this.ws.onmessage = this.onWsMessage
 
     this.peerConnection = new RTCPeerConnection(Config2)
-    this.openMessages = {}
+    this.localRemoteSet = this.waitForLocalRemote()
 
     // @ts-ignore
     window.pc = this.peerConnection
+  }
+
+  private waitForLocalRemote = (): Promise<any> => {
+    return new Promise((resolve) => {
+      let tries = 0
+
+      const waiter = () => {
+        console.log('waitForLocalRemote: Awaiting ready - try:', tries)
+
+        tries += 1
+        const { localDescription, remoteDescription } = this.peerConnection
+        if (localDescription.type.length > 0 && remoteDescription.type.length > 0) {
+          return resolve()
+        } else {
+          return setTimeout(waiter, 100)
+        }
+      }
+
+      waiter()
+    })
   }
 
   private onWsMessage = (mesgEvt: MessageEvent) => {
@@ -138,20 +160,12 @@ class HandshakeApi {
     const candidate: RTCIceCandidate = JSON.parse(mesg.data)
 
     console.log('handleCandidate: Received and adding ice candidate', candidate)
-    const foo = () => {
+    this.localRemoteSet.then(() => {
       console.log('handleCandidates: calling addIceCandidate', candidate)
       this.peerConnection.addIceCandidate(candidate)
         .then(() => console.log('handleCandidate: Added ice candidate', candidate))
         .catch((err) => console.log('handleCandidate: error adding ice candidate', err, candidate))
-    }
-
-    if (this.peerConnection.remoteDescription.type.length === 0) {
-      console.log('handleCandidates: remoteDescription not yet set, waiting 2 sec')
-      setTimeout(foo, 2000)
-    } else {
-      console.log('handleCandidate: remote description present', this.peerConnection.remoteDescription)
-      foo()
-    }
+    })
   }
 
   private onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {
