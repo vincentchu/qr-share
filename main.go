@@ -2,13 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -21,6 +23,11 @@ type HandshakeApiMessage struct {
 	Id       string `json:"id"`
 	MesgType string `json:"mesgType"`
 	Data     string `json:"data"`
+}
+
+type ICEConfig struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func parseMessage(msgStr string) (msg HandshakeApiMessage, err error) {
@@ -42,6 +49,9 @@ type ConnectionHandler struct {
 	candidates  map[Id][]HandshakeApiMessage
 	offerConns  map[Id]*websocket.Conn
 	answerConns map[Id]*websocket.Conn
+	twilioSID   string
+	twilioToken string
+	iceConfig   ICEConfig
 }
 
 func (handler *ConnectionHandler) HandleConnection(scope ScopeType, id Id, conn *websocket.Conn) error {
@@ -229,6 +239,40 @@ func (handler *ConnectionHandler) Candidate(id Id, scope ScopeType, partner *web
 	partner.WriteJSON(message)
 }
 
+func (handler *ConnectionHandler) RefreshICE(sid string, token string) {
+	handler.mutex.Lock()
+	handler.twilioSID = sid
+	handler.twilioToken = token
+	handler.mutex.Unlock()
+
+	fetchIceConfig := func() {
+		url := fmt.Sprintf("https://%s:%s@api.twilio.com/2010-04-01/Accounts/%s/Tokens.json", sid, token, sid)
+
+		for {
+			resp, err := http.Post(url, "application/json", strings.NewReader(""))
+			if err != nil {
+				logger.Printf("RefreshIce: Error when fetching Twilio config %v", err)
+			} else {
+				body, _ := ioutil.ReadAll(resp.Body)
+				resp.Body.Close()
+				logger.Printf("GOT %s", string(body))
+
+				iceConfig := ICEConfig{}
+				json.Unmarshal(body, &iceConfig)
+				logger.Printf("Unmarshaled : %v", iceConfig)
+
+				handler.mutex.Lock()
+				handler.iceConfig = iceConfig
+				handler.mutex.Unlock()
+			}
+
+			time.Sleep(time.Hour)
+		}
+	}
+
+	go fetchIceConfig()
+}
+
 var logger = log.New(os.Stdout, "", log.LstdFlags)
 
 var upgrader = websocket.Upgrader{
@@ -268,17 +312,21 @@ func root(writer http.ResponseWriter, reader *http.Request) {
 	http.ServeFile(writer, reader, string(http.Dir("public/index.html")))
 }
 
-func main() {
-	addr := flag.String("addr", "", "Server port to listen on")
-	flag.Parse()
-
+func getEnv() (addr string, twilioSID string, twilioToken string) {
 	port := os.Getenv("PORT")
-	if *addr != "" {
-		port = *addr
-	}
+	addr = fmt.Sprintf(":%s", port)
 
-	address := fmt.Sprintf(":%s", port)
+	twilioSID = os.Getenv("TWILIO_SID")
+	twilioToken = os.Getenv("TWILIO_TOKEN")
+
+	return addr, twilioSID, twilioToken
+}
+
+func main() {
+	address, twilioSID, twilioToken := getEnv()
 	logger.Printf("Listening on address: %s", address)
+
+	connHandler.RefreshICE(twilioSID, twilioToken)
 
 	http.HandleFunc("/ws", handshake)
 
