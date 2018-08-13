@@ -11,7 +11,9 @@ import Receive from './views/Receive'
 
 declare global {
   interface Window {
-    VERSION: string,
+    VERSION: string
+    USERNAME: string
+    PASSWORD: string
   }
 }
 

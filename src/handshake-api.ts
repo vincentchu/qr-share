@@ -4,27 +4,32 @@ const GoogleIceConfig = {
   iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ],
 }
 
-const Config2 = {
-  iceServers: [
-    {
-      urls: "stun:global.stun.twilio.com:3478?transport=udp"
-    },
-    {
-      urls: "turn:global.turn.twilio.com:3478?transport=udp",
-      username: "a0dfde316ac9187e920eb4785571c3f03efbaac773e9790ffa3db178404f8bc9",
-      credential: "kozSq6UhtiFRZe3dEeHz2oIwROIZ9MuE+Ji6iuCqaKU="
-    },
-    {
-      urls: "turn:global.turn.twilio.com:3478?transport=tcp",
-      username: "a0dfde316ac9187e920eb4785571c3f03efbaac773e9790ffa3db178404f8bc9",
-      credential: "kozSq6UhtiFRZe3dEeHz2oIwROIZ9MuE+Ji6iuCqaKU="
-    },
-    {
-      urls: "turn:global.turn.twilio.com:443?transport=tcp",
-      username: "a0dfde316ac9187e920eb4785571c3f03efbaac773e9790ffa3db178404f8bc9",
-      credential: "kozSq6UhtiFRZe3dEeHz2oIwROIZ9MuE+Ji6iuCqaKU="
-    }
-  ]
+const TwilioStun = "stun:global.stun.twilio.com:3478?transport=udp"
+const TwilioServers = [
+  "turn:global.turn.twilio.com:3478?transport=udp",
+  "turn:global.turn.twilio.com:3478?transport=tcp",
+  "turn:global.turn.twilio.com:443?transport=tcp",
+]
+
+type IceServer = {
+  urls: string
+  username?: string
+  credential?: string
+}
+
+const makeConfig = () => {
+  if (window.USERNAME.length === 0 || window.PASSWORD.length === 0) {
+    return GoogleIceConfig
+  }
+
+  const iceServers: IceServer[] = TwilioServers.map((url) => ({
+    urls: url,
+    username: window.USERNAME,
+    credential: window.PASSWORD,
+  }))
+  iceServers.push({ urls: TwilioStun })
+
+  return { iceServers }
 }
 
 type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate'
@@ -58,7 +63,7 @@ class HandshakeApi {
     this.ws = new WebSocket(this.url)
     this.ws.onmessage = this.onWsMessage
 
-    this.peerConnection = new RTCPeerConnection(Config2)
+    this.peerConnection = new RTCPeerConnection(makeConfig())
     this.remoteSet = this.waitForRemoteSet()
 
     // @ts-ignore

@@ -315,9 +315,10 @@ func root(writer http.ResponseWriter, reader *http.Request) {
 
 type ConfigHandler struct{}
 
+var configTemplate, _ = template.New("Config").Parse("var USERNAME = \"{{.Username}}\";\nvar PASSWORD = \"{{.Password}}\";")
+
 func (config ConfigHandler) ServeHTTP(writer http.ResponseWriter, reader *http.Request) {
-	tmpl, _ := template.New("foo").Parse("var username = \"{{.Username}}\";\nvar password = \"{{.Password}}\";")
-	tmpl.Execute(writer, connHandler.iceConfig)
+	configTemplate.Execute(writer, connHandler.iceConfig)
 }
 
 func getEnv() (addr string, twilioSID string, twilioToken string) {
