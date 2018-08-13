@@ -29,7 +29,7 @@ const makeConfig = () => {
     credential: window.PASSWORD,
   }))
   iceServers.unshift({ urls: TwilioStun })
-  iceServers.unshift({ urls: GoogleStun })
+  console.log('makeConfig: Using ICE configuration', iceServers)
 
   return { iceServers }
 }
