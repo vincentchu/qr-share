@@ -1,14 +1,15 @@
 import * as uuid from 'uuid/v1'
 
+const GoogleStun = 'stun:stun.l.google.com:19302'
 const GoogleIceConfig = {
-  iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ],
+  iceServers: [ { urls: GoogleStun } ],
 }
 
-const TwilioStun = "stun:global.stun.twilio.com:3478?transport=udp"
+const TwilioStun = 'stun:global.stun.twilio.com:3478?transport=udp'
 const TwilioServers = [
-  "turn:global.turn.twilio.com:3478?transport=udp",
-  "turn:global.turn.twilio.com:3478?transport=tcp",
-  "turn:global.turn.twilio.com:443?transport=tcp",
+  'turn:global.turn.twilio.com:3478?transport=udp',
+  'turn:global.turn.twilio.com:3478?transport=tcp',
+  'turn:global.turn.twilio.com:443?transport=tcp',
 ]
 
 type IceServer = {
@@ -27,7 +28,8 @@ const makeConfig = () => {
     username: window.USERNAME,
     credential: window.PASSWORD,
   }))
-  iceServers.push({ urls: TwilioStun })
+  iceServers.unshift({ urls: TwilioStun })
+  iceServers.unshift({ urls: GoogleStun })
 
   return { iceServers }
 }
