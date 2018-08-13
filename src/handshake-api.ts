@@ -1,6 +1,6 @@
 import * as uuid from 'uuid/v1'
 
-const Config = {
+const GoogleIceConfig = {
   iceServers: [ { urls: 'stun:stun.l.google.com:19302' } ],
 }
 

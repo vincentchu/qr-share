@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -255,17 +256,17 @@ func (handler *ConnectionHandler) RefreshICE(sid string, token string) {
 			} else {
 				body, _ := ioutil.ReadAll(resp.Body)
 				resp.Body.Close()
-				logger.Printf("GOT %s", string(body))
 
 				iceConfig := ICEConfig{}
 				json.Unmarshal(body, &iceConfig)
-				logger.Printf("Unmarshaled : %v", iceConfig)
+				logger.Printf("RefrechIce: Unmarshaled Twilio Response: %v", iceConfig)
 
 				handler.mutex.Lock()
 				handler.iceConfig = iceConfig
 				handler.mutex.Unlock()
 			}
 
+			logger.Printf("RefreshIce: credentials updated, sleeping for an hour")
 			time.Sleep(time.Hour)
 		}
 	}
@@ -312,6 +313,13 @@ func root(writer http.ResponseWriter, reader *http.Request) {
 	http.ServeFile(writer, reader, string(http.Dir("public/index.html")))
 }
 
+type ConfigHandler struct{}
+
+func (config ConfigHandler) ServeHTTP(writer http.ResponseWriter, reader *http.Request) {
+	tmpl, _ := template.New("foo").Parse("var username = \"{{.Username}}\";\nvar password = \"{{.Password}}\";")
+	tmpl.Execute(writer, connHandler.iceConfig)
+}
+
 func getEnv() (addr string, twilioSID string, twilioToken string) {
 	port := os.Getenv("PORT")
 	addr = fmt.Sprintf(":%s", port)
@@ -329,6 +337,7 @@ func main() {
 	connHandler.RefreshICE(twilioSID, twilioToken)
 
 	http.HandleFunc("/ws", handshake)
+	http.Handle("/config.js", ConfigHandler{})
 
 	static := http.FileServer(http.Dir("public"))
 	http.Handle("/", static)

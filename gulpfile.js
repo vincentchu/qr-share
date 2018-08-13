@@ -21,7 +21,7 @@ const DevServerConf = {
   },
   disableHostCheck: true,
   proxy: {
-    '/ws': { target: 'http://localhost:9090', secure: false },
+    '/config.js': { target: 'http://localhost:9090', secure: false },
   },
 }
 
