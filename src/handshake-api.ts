@@ -5,10 +5,8 @@ const GoogleIceConfig = {
   iceServers: [ { urls: GoogleStun } ],
 }
 
-const TwilioStun = 'stun:global.stun.twilio.com:3478?transport=udp'
+const TwilioStun = 'stun:global.stun.twilio.com:443?transport=tcp'
 const TwilioServers = [
-  'turn:global.turn.twilio.com:3478?transport=udp',
-  'turn:global.turn.twilio.com:3478?transport=tcp',
   'turn:global.turn.twilio.com:443?transport=tcp',
 ]
 
