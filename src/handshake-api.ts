@@ -31,7 +31,7 @@ const makeConfig = () => {
   iceServers.unshift({ urls: TwilioStun })
   console.log('makeConfig: Using ICE configuration', iceServers)
 
-  return { iceServers }
+  return { iceServers, iceCandidatePoolSize: 8 }
 }
 
 type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate'
@@ -75,10 +75,7 @@ class HandshakeApi {
   private waitForRemoteSet = (): Promise<any> => {
     return new Promise((resolve) => {
       let tries = 0
-
       const waiter = () => {
-        console.log('waitForRemoteSet: Awaiting ready - try:', tries)
-
         tries += 1
         const { remoteDescription } = this.peerConnection
         if (remoteDescription && remoteDescription.type.length > 0) {
