@@ -26,6 +26,10 @@ type HandshakeApiMessage struct {
 	Data     string `json:"data"`
 }
 
+type HandshakeApiMessageConfirm struct {
+	Id string `json:"id"`
+}
+
 type ICEConfig struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -174,7 +178,7 @@ func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message 
 
 	if senderOk {
 		logger.Printf("%s/%d: Echoing back response to sender (mesgId: %s)", id, scope, message.Id)
-		sender.WriteJSON(message)
+		sender.WriteJSON(HandshakeApiMessageConfirm{message.Id})
 	}
 
 	return nil
