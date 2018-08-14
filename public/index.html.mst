@@ -8,6 +8,7 @@
     <title>Foundling</title>
     <script src="/version.js?version={{ version }}"></script>
     <script src="/config.js?version={{ version }}"></script>
+    <script src="/adapter.js"></script>
   </head>
   <body>
     <div id="root"></div>
