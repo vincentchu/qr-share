@@ -213,13 +213,12 @@ class HandshakeApi {
     return this.init()
       .then(() => this.peerConnection.createOffer())
       .then((offer) => {
-        this.peerConnection.setLocalDescription(offer)
-
-        return this.wsSend({
-          id: uuid(),
-          mesgType: 'offer',
-          data: JSON.stringify(offer),
-        })
+        return this.peerConnection.setLocalDescription(offer)
+          .then(() => this.wsSend({
+            id: uuid(),
+            mesgType: 'offer',
+            data: JSON.stringify(offer),
+          }))
       })
       .then(this.waitForAnswer)
   }
