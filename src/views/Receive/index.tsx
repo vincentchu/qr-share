@@ -42,7 +42,7 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 
         <ul>
           { files.map((file) => (
-            <FileWithPreview file={file} />
+            <FileWithPreview key={file.name} file={file} />
           )) }
         </ul>
       </div>
