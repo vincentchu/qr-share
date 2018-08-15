@@ -21,7 +21,10 @@ const Send: React.SFC<SendProps> = (props) => {
   const onDrop = (files: ImageFile[]) => {
     const handshakeApi = new HandshakeApi(WebsocketUrl, uuid(), 'offer')
 
-    sendFiles(files, handshakeApi.peerConnection, dispatch)
+    // @ts-ignore
+    window.h = handshakeApi
+
+    // sendFiles(files, handshakeApi.peerConnection, dispatch)
 
     dispatch(addFiles(files))
     dispatch(updateHandshakeData(handshakeApi))

@@ -46,6 +46,8 @@ class HandshakeApi {
   private ws: WebSocket
   private openMessages: { [id: string ]: () => void }
   private remoteSet: Promise<any>
+  private iceConnected: Promise<void>
+  rtcDataChannel: RTCDataChannel
 
   url: string
   id: string
@@ -182,6 +184,10 @@ class HandshakeApi {
     }
   }
 
+  private onIceConnectionStateChange = () => {
+    console.log('ICE STATE', this.peerConnection.iceConnectionState)
+  }
+
   private waitForAnswer = (): Promise<any> => {
     return new Promise((resolve) => {
       this.openMessages['answer'] = resolve
@@ -195,6 +201,8 @@ class HandshakeApi {
         tries = tries + 1
         if (this.ws.readyState !== WebSocket.CONNECTING) {
           this.peerConnection.onicecandidate = this.onIceCandidate
+          this.peerConnection.oniceconnectionstatechange = this.onIceConnectionStateChange
+          this.peerConnection.createDataChannel('init')
 
           return resolve()
         }
@@ -207,6 +215,7 @@ class HandshakeApi {
 
     return openPromise
   }
+
 
   // Called by the offerer to start handshake
   startHandshake = (): Promise<any> => {

@@ -58,6 +58,9 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   const handshakeApi = new HandshakeApi(WebsocketUrl, id, 'answer')
   receiveFiles(handshakeApi.peerConnection, dispatch)
 
+  // @ts-ignore
+  window.h = handshakeApi
+
   return handshakeApi.receiveHandshake()
 }
 
