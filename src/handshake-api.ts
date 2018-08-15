@@ -1,4 +1,6 @@
 import * as uuid from 'uuid/v1'
+import * as base64 from 'base64-js'
+
 import { waitFor, resolveAfter } from './promise-utils'
 
 const GoogleStun = 'stun:stun.l.google.com:19302'
@@ -37,7 +39,7 @@ export type DataSender = (data: string | ArrayBuffer) => Promise<void>
 
 type ConnectionState = 'connecting' | 'webrtc' | 'websocket'
 
-type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate'
+type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate' | 'data-string' | 'data-binary'
 
 type HandshakeApiMessage = {
   id: string
@@ -119,6 +121,12 @@ class HandshakeApi {
       case 'candidate':
         return this.handleCandidate(mesg)
 
+      case 'data-string':
+        return this.handleData(mesg)
+
+      case 'data-binary':
+        return this.handleData(mesg)
+
       default:
         console.log('onWsMessage: Unexpected message type', mesg)
     }
@@ -177,6 +185,21 @@ class HandshakeApi {
         .then(() => console.log('handleCandidate: Added ice candidate', candidate))
         .catch((err) => console.log('handleCandidate: error adding ice candidate', err, candidate))
     })
+  }
+
+  private handleData = (mesg: HandshakeApiMessage) => {
+    let data
+    switch (mesg.mesgType) {
+      case 'data-string':
+        data = mesg.data
+        break
+
+      case 'data-binary':
+        data = <ArrayBuffer>base64.toByteArray(mesg.data).buffer
+        break
+    }
+
+    this.onData && this.onData(data)
   }
 
   private onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {
@@ -239,6 +262,28 @@ class HandshakeApi {
     }
   }
 
+  private sendFallback = (data: string | ArrayBuffer): Promise<void> => {
+    let mesg: HandshakeApiMessage
+    if (typeof data === 'string') {
+      mesg = {
+        id: uuid(),
+        mesgType: 'data-string',
+        data,
+      }
+    } else {
+      const buffer = <ArrayBuffer>data
+      const bytes = new Uint8Array(buffer, 0, buffer.byteLength)
+
+      mesg = {
+        id: uuid(),
+        mesgType: 'data-binary',
+        data: base64.fromByteArray(bytes)
+      }
+    }
+
+    return this.wsSend(mesg)
+  }
+
   // Called by the offerer to start handshake
   startHandshake = (): Promise<any> => {
     return this.init()
@@ -278,7 +323,7 @@ class HandshakeApi {
         return Promise.resolve(this.rtcDataChannel.send(data))
 
       case 'websocket':
-        return Promise.reject('unimplemented1')
+        return this.sendFallback(data)
 
       default:
         return Promise.reject(`HandshakeApi: invalid connectionState: ${this.connectionState}`)
