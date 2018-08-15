@@ -70,13 +70,12 @@ func (handler *ConnectionHandler) HandleConnection(scope ScopeType, id Id, conn 
 			break
 		}
 
-		logger.Printf("%s/%d: Receive raw message: %s", id, scope, bytes)
-
 		message, err := parseMessage(string(bytes))
 		if err != nil {
 			logger.Printf("%s/%d: Error parsing message: %v", id, scope, err)
 		}
 
+		logger.Printf("%s/%d: Receive message: MesgId: %s, MesgType: %s", id, scope, message.Id, message.MesgType)
 		err = handler.HandleMessage(id, scope, message)
 		if err != nil {
 			logger.Printf("%s/%d: Error handling message: %v", id, scope, err)
@@ -174,6 +173,8 @@ func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message 
 
 	case "candidate":
 		handler.Candidate(id, scope, partner, partnerOk, message)
+	case "data-string", "data-binary":
+		handler.Data(id, scope, partner, partnerOk, message)
 	}
 
 	if senderOk {
@@ -241,6 +242,16 @@ func (handler *ConnectionHandler) Candidate(id Id, scope ScopeType, partner *web
 	}
 
 	logger.Printf("%s/%d: Candidate - sending candidate to partner %v", id, scope, message)
+	partner.WriteJSON(message)
+}
+
+func (handler *ConnectionHandler) Data(id Id, scope ScopeType, partner *websocket.Conn, partnerOk bool, message HandshakeApiMessage) {
+	if !partnerOk {
+		logger.Printf("%s/%d: Data - partner connection not found", id, scope)
+		return
+	}
+
+	logger.Printf("%s/%d: Data - sending candidate to partner. mesgId: %s", id, scope, message.Id)
 	partner.WriteJSON(message)
 }
 
