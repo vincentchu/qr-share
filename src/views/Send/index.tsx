@@ -24,12 +24,15 @@ const Send: React.SFC<SendProps> = (props) => {
     // @ts-ignore
     window.h = handshakeApi
 
-    // sendFiles(files, handshakeApi.peerConnection, dispatch)
 
     dispatch(addFiles(files))
     dispatch(updateHandshakeData(handshakeApi))
 
-    handshakeApi.startHandshake().then(() => console.log('Handshake Done!'))
+    handshakeApi.startHandshake().then(() => {
+      console.log('Handshake Done!')
+
+      sendFiles(files, handshakeApi, dispatch)
+    })
   }
 
   return (

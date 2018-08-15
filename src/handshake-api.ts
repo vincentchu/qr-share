@@ -203,7 +203,7 @@ class HandshakeApi {
         tries = tries + 1
         if (this.ws.readyState !== WebSocket.CONNECTING) {
           this.peerConnection.onicecandidate = this.onIceCandidate
-          this.peerConnection.createDataChannel('data') // Important. ICE connection won't be created until data channel is created
+          this.rtcDataChannel = this.peerConnection.createDataChannel('data') // Important. ICE connection won't be created until data channel is created
 
           return resolve()
         }
@@ -218,7 +218,7 @@ class HandshakeApi {
   }
 
   private waitForIceConnected = (): Promise<void> => {
-    const webRtcConnected = waitFor(() => this.peerConnection.iceConnectionState === 'completed')
+    const webRtcConnected = waitFor(() => this.peerConnection.iceConnectionState === 'completed' && this.rtcDataChannel.readyState === 'open')
       .then(() => 'webrtc')
 
     const timeoutFallback = resolveAfter(2000).then(() => 'websocket')
@@ -258,6 +258,19 @@ class HandshakeApi {
       }))
 
     return Promise.all([ sendGetOfferPromise, recvOfferPromise ])
+  }
+
+  send: DataSender = (data): Promise<void> => {
+    switch (this.connectionState) {
+      case 'webrtc':
+        return Promise.resolve(this.rtcDataChannel.send(data))
+
+      case 'websocket':
+        return Promise.reject('unimplemented1')
+
+      default:
+        return Promise.reject(`HandshakeApi: invalid connectionState: ${this.connectionState}`)
+    }
   }
 }
 
