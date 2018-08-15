@@ -56,7 +56,7 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   } = props
 
   const handshakeApi = new HandshakeApi(WebsocketUrl, id, 'answer')
-  receiveFiles(handshakeApi.peerConnection, dispatch)
+  handshakeApi.onData = receiveFiles(dispatch)
 
   // @ts-ignore
   window.h = handshakeApi

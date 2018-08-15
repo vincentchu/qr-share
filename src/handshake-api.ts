@@ -58,6 +58,7 @@ class HandshakeApi {
   scope: ScopeType
   peerConnection: RTCPeerConnection
   connectionState: ConnectionState
+  onData?: DataSender
 
   constructor(baseUrl: string, id: string, scope: ScopeType) {
     const scopeVal = scope === 'offer' ? 0 : 1
@@ -228,6 +229,16 @@ class HandshakeApi {
     })
   }
 
+  private setDataListeners = () => {
+    this.peerConnection.ondatachannel = (evt) => {
+      const { channel } = evt
+
+      if (channel.label === 'data') {
+        channel.onmessage = ({ data }) => this.onData && this.onData(data)
+      }
+    }
+  }
+
   // Called by the offerer to start handshake
   startHandshake = (): Promise<any> => {
     return this.init()
@@ -258,6 +269,7 @@ class HandshakeApi {
       }))
 
     return Promise.all([ sendGetOfferPromise, recvOfferPromise ])
+      .then(this.setDataListeners)
   }
 
   send: DataSender = (data): Promise<void> => {

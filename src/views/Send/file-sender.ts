@@ -1,12 +1,9 @@
 import { ImageFile } from 'react-dropzone'
 import { Dispatch } from 'redux'
 
-import { changeDataReady } from '../../state/uploader'
 import HandshakeApi from '../../handshake-api'
 
 const ChunkSize = 16384
-
-export const DataChannelName = 'files'
 
 export const sendFiles = (files: ImageFile[], handshakeApi: HandshakeApi, dispatch: Dispatch) => {
   const sender = (idx: number): Promise<any> => {

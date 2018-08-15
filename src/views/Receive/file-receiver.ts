@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux'
 
-import { DataChannelName } from '../Send/file-sender'
 import { startFile, endFile, addChunk } from '../../state/receiver'
+import { DataSender } from '../../handshake-api'
 
 type ActionMessage = {
   action: string
@@ -12,29 +12,21 @@ type ActionMessage = {
   lastModified?: number
 }
 
-export const receiveFiles = (peerConnection: RTCPeerConnection, dispatch: Dispatch) => {
-  const foo = peerConnection.createDataChannel('foo')
-  foo.onopen = () => console.log('Foo is open')
-  foo.onclose = () => console.log('Foo is closed')
+export const receiveFiles = (dispatch: Dispatch): DataSender => (data: string | ArrayBuffer) => {
+  if (typeof data === 'string') {
+    const mesg: ActionMessage = JSON.parse(data)
+    switch (mesg.action) {
+      case 'start':
+        dispatch((startFile(mesg)))
+        break
 
-  peerConnection.ondatachannel = (evt) => {
-    const { channel } = evt
-
-    if (channel.label === DataChannelName) {
-      channel.onmessage = ({ data }) => {
-        if (typeof data === 'string') {
-          const mesg: ActionMessage = JSON.parse(data)
-          switch (mesg.action) {
-            case 'start':
-              return dispatch((startFile(mesg)))
-
-            case 'end':
-              return dispatch(endFile())
-          }
-        } else {
-          dispatch(addChunk(data))
-        }
-      }
+      case 'end':
+        dispatch(endFile())
+        break
     }
+  } else {
+    dispatch(addChunk(data))
   }
+
+  return Promise.resolve()
 }
