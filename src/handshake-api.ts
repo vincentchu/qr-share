@@ -1,4 +1,5 @@
 import * as uuid from 'uuid/v1'
+import { waitFor, resolveAfter } from './promise-utils'
 
 const GoogleStun = 'stun:stun.l.google.com:19302'
 const GoogleIceConfig = {
@@ -32,6 +33,10 @@ const makeConfig = () => {
   return { iceServers, iceCandidatePoolSize: 8 }
 }
 
+export type DataSender = (data: string | ArrayBuffer) => Promise<void>
+
+type ConnectionState = 'connecting' | 'webrtc' | 'websocket'
+
 type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate'
 
 type HandshakeApiMessage = {
@@ -46,13 +51,13 @@ class HandshakeApi {
   private ws: WebSocket
   private openMessages: { [id: string ]: () => void }
   private remoteSet: Promise<any>
-  private iceConnected: Promise<void>
   rtcDataChannel: RTCDataChannel
 
   url: string
   id: string
   scope: ScopeType
   peerConnection: RTCPeerConnection
+  connectionState: ConnectionState
 
   constructor(baseUrl: string, id: string, scope: ScopeType) {
     const scopeVal = scope === 'offer' ? 0 : 1
@@ -67,6 +72,7 @@ class HandshakeApi {
 
     this.peerConnection = new RTCPeerConnection(makeConfig())
     this.remoteSet = this.waitForRemoteSet()
+    this.connectionState = 'connecting'
 
     // @ts-ignore
     window.pc = this.peerConnection
@@ -184,10 +190,6 @@ class HandshakeApi {
     }
   }
 
-  private onIceConnectionStateChange = () => {
-    console.log('ICE STATE', this.peerConnection.iceConnectionState)
-  }
-
   private waitForAnswer = (): Promise<any> => {
     return new Promise((resolve) => {
       this.openMessages['answer'] = resolve
@@ -201,8 +203,7 @@ class HandshakeApi {
         tries = tries + 1
         if (this.ws.readyState !== WebSocket.CONNECTING) {
           this.peerConnection.onicecandidate = this.onIceCandidate
-          this.peerConnection.oniceconnectionstatechange = this.onIceConnectionStateChange
-          this.peerConnection.createDataChannel('init')
+          this.peerConnection.createDataChannel('data') // Important. ICE connection won't be created until data channel is created
 
           return resolve()
         }
@@ -216,6 +217,16 @@ class HandshakeApi {
     return openPromise
   }
 
+  private waitForIceConnected = (): Promise<void> => {
+    const webRtcConnected = waitFor(() => this.peerConnection.iceConnectionState === 'completed')
+      .then(() => 'webrtc')
+
+    const timeoutFallback = resolveAfter(2000).then(() => 'websocket')
+
+    return Promise.race([ webRtcConnected, timeoutFallback ]).then((state: ConnectionState) => {
+      this.connectionState = state
+    })
+  }
 
   // Called by the offerer to start handshake
   startHandshake = (): Promise<any> => {
@@ -230,6 +241,7 @@ class HandshakeApi {
           }))
       })
       .then(this.waitForAnswer)
+      .then(this.waitForIceConnected)
   }
 
   // Called by the answerer to initiate receipt of offer

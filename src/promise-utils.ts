@@ -29,3 +29,7 @@ export const promisifyWithTimeout = <T>(promise: Promise<T>, millis: number): Pr
 
   return Promise.race([promise, timeoutPromise])
 }
+
+
+// @ts-ignore
+window.resolveAfter = resolveAfter
