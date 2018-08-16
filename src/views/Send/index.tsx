@@ -4,7 +4,9 @@ import Dropzone, { ImageFile } from 'react-dropzone'
 import * as uuid from 'uuid/v1'
 import * as QRCode from 'qrcode.react'
 
+import FilePicker from './FilePicker'
 import { sendFiles } from './file-sender'
+import Footer from '../Footer'
 import { urlForReceive, WebsocketUrl } from '../url-helper'
 import HandshakeApi, { ConnectionState } from '../../handshake-api'
 import { UploaderState, addFiles, updateHandshakeData } from '../../state/uploader'
@@ -35,36 +37,10 @@ const Send: React.SFC<SendProps> = (props) => {
   }
 
   return (
-    <div className="row">
-      <h1>QR Share { window.VERSION }</h1>
+    <div>
+      { !id && <FilePicker onDrop={onDrop} /> }
 
-      { connectionState && <div>{ connectionState }</div> }
-
-      <div className="dropzone">
-        <Dropzone onDrop={onDrop}>
-          This is the dropzone
-        </Dropzone>
-      </div>
-
-      <div>
-        <p>
-          Link: <a href={url} target="_blank">{ url }</a>
-        </p>
-
-        { url && <p><QRCode value={url} level="Q" size={200} /></p> }
-      </div>
-
-      <div>
-        <h3>Files</h3>
-        <ul>
-          { files.map((file) => (
-            <li key={file.name}>
-              { file.name }
-              { file.preview && <img height="150px" width="150px" src={file.preview} /> }
-            </li>
-          )) }
-        </ul>
-      </div>
+      <Footer />
     </div>
   )
 }
