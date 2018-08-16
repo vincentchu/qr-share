@@ -2,6 +2,7 @@ import * as React from 'react'
 import { ImageFile } from 'react-dropzone'
 import * as QRCode from 'qrcode.react'
 
+import FileList from './FileList'
 import StepBlock from '../StepBlock'
 import { urlForReceive } from '../url-helper'
 import { ConnectionState } from '../../handshake-api'
@@ -23,6 +24,8 @@ const Upload: React.SFC<UploadProps> = (props) => {
         <h4>
           <a href={url}>Link</a>
         </h4>
+
+        <FileList files={files} />
       </div>
       <StepBlock
         header="Step 2: Scan QR code or share link"
