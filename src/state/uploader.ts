@@ -36,7 +36,7 @@ type ChangeDataReady = {
 } & Action<string>
 
 type ChangeCurrentFile = {
-  currentFile: FileStub
+  currentFile?: FileStub
 } & Action<string>
 
 type ChangeBytesTransferred = {

@@ -12,12 +12,12 @@ export const sendFiles = (files: ImageFile[], handshakeApi: HandshakeApi, dispat
   const sender = (idx: number): Promise<any> => {
     if (idx < files.length ) {
       return sendFile(files[idx], handshakeApi, dispatch).then(() => sender(idx + 1))
-    } else {
-      return Promise.resolve(1)
     }
+
+    return Promise.resolve(1)
   }
 
-  sender(0)
+  sender(0).then(() => dispatch(changeCurrentFile()))
 }
 
 const streamChunk = (file: ImageFile, offset: number, handshakeApi: HandshakeApi, dispatch: Dispatch): Promise<any> => {

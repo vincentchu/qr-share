@@ -10,15 +10,18 @@ import Footer from '../Footer'
 import { WebsocketUrl } from '../url-helper'
 import HandshakeApi, { ConnectionState } from '../../handshake-api'
 import { UploaderState, addFiles, updateHandshakeData } from '../../state/uploader'
+import { FileStub, FileTransfer } from '../../state/shared'
 
 type SendProps = {
   id?: string
   connectionState?: ConnectionState
+  currentFile?: FileStub
+  currentTransfer?: FileTransfer
   files: ImageFile[]
 } & DispatchProp
 
 const Send: React.SFC<SendProps> = (props) => {
-  const { id, files, dispatch, connectionState } = props
+  const { id, files, dispatch, connectionState, currentFile, currentTransfer } = props
 
   const onDrop = (files: ImageFile[]) => {
     const handshakeApi = new HandshakeApi(WebsocketUrl, uuid(), 'offer')
@@ -41,6 +44,7 @@ const Send: React.SFC<SendProps> = (props) => {
 
       { id && <Upload
         id={id} files={files} connectionState={connectionState}
+        currentFile={currentFile} currentTransfer={currentTransfer}
       /> }
 
       <Footer />
@@ -51,10 +55,16 @@ const Send: React.SFC<SendProps> = (props) => {
 const mapStateToProps = (state: {
   uploader: UploaderState,
 }) => {
-  const { files, handshakeApi, connectionState } = state.uploader
+  const { files, handshakeApi, connectionState, currentFile, currentTransfer } = state.uploader
   const id = handshakeApi && handshakeApi.id
 
-  return { id, files, connectionState }
+  return {
+    id,
+    files,
+    connectionState,
+    currentFile,
+    currentTransfer,
+  }
 }
 
 export default connect(mapStateToProps)(Send)

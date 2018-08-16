@@ -10,6 +10,7 @@ type PreviewProps = {
 const FileStyle = {
   backgroundImage: 'url(\'/file.svg\')',
   backgroundPositionX: '6px',
+  backgroundSize: 'contain',
 }
 
 const Preview: React.SFC<PreviewProps> = (props) => {
@@ -21,6 +22,7 @@ const Preview: React.SFC<PreviewProps> = (props) => {
       ...style,
       backgroundImage: `url(\'${src}\')`,
       backgroundPositionX: '0px',
+      backgroundSize: 'cover',
     }
   }
 
