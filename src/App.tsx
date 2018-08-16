@@ -1,6 +1,8 @@
 import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
 
+import  './scss/qr-share.scss'
+
 type AppProps = {
   children?: any
 } & DispatchProp

@@ -35,7 +35,7 @@ const Send: React.SFC<SendProps> = (props) => {
   }
 
   return (
-    <div>
+    <div className="row">
       <h1>QR Share { window.VERSION }</h1>
 
       { connectionState && <div>{ connectionState }</div> }
