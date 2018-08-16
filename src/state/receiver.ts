@@ -1,19 +1,19 @@
 import { Action, ActionCreator, Reducer, AnyAction } from 'redux'
-import { FileStub, FileStore } from './shared'
+import { FileStub, FileTransfer } from './shared'
 
 const keyFor = (stub: FileStub): string => [ stub.name, stub.size, stub.lastModified ].join('/')
 
-const emptyFileStore = (metadata: FileStub): FileStore => ({
+const emptyFileStore = (metadata: FileStub): FileTransfer => ({
   bytesTransferred: 0,
   buffer: [],
 })
 
-const updateTransfer = (currentTransfer: FileStore, chunk: ArrayBuffer): FileStore => ({
+const updateTransfer = (currentTransfer: FileTransfer, chunk: ArrayBuffer): FileTransfer => ({
   bytesTransferred: currentTransfer.bytesTransferred + chunk.byteLength,
   buffer: currentTransfer.buffer.concat([ chunk ])
 })
 
-const completedFile = (currentFile: FileStub, currentTransfer: FileStore): File => {
+const completedFile = (currentFile: FileStub, currentTransfer: FileTransfer): File => {
   if (currentFile.size !== currentTransfer.bytesTransferred) {
     throw new Error(`Received bytes note equal to file size ${currentTransfer.bytesTransferred} != ${currentFile.size}`)
   }
@@ -30,7 +30,7 @@ const completedFile = (currentFile: FileStub, currentTransfer: FileStore): File 
 
 export type ReceiverState = {
   currentFile?: FileStub
-  currentTransfer?: FileStore
+  currentTransfer?: FileTransfer
   completedFiles: {
     [ key: string ]: File
   }

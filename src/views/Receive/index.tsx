@@ -9,7 +9,7 @@ import loadingComponent from '../loading-component'
 import { WebsocketUrl } from '../url-helper'
 import HandshakeApi from '../../handshake-api'
 import { ReceiverState } from '../../state/receiver'
-import { FileStub, FileStore } from '../../state/shared'
+import { FileStub, FileTransfer } from '../../state/shared'
 
 type RouteProps = {
   id: string
@@ -17,7 +17,7 @@ type RouteProps = {
 
 type ReceiveProps = {
   currentFile?: FileStub
-  currentTransfer?: FileStore
+  currentTransfer?: FileTransfer
   files: File[]
 } & RouteComponentProps<RouteProps> & DispatchProp
 
