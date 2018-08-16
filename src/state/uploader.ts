@@ -1,7 +1,7 @@
 import { Action, ActionCreator, Reducer, AnyAction } from 'redux'
 import { ImageFile } from 'react-dropzone'
 
-import { FileStub } from './shared'
+import { FileStub, FileStore } from './shared'
 import HandshakeApi, { ConnectionState } from '../handshake-api'
 
 export type UploaderState = {
@@ -9,6 +9,7 @@ export type UploaderState = {
   connectionState: ConnectionState
   handshakeApi?: HandshakeApi
   currentFile?: FileStub
+  currentTransfer?: FileStore
 }
 
 const InitialState: UploaderState = {
@@ -19,6 +20,8 @@ const InitialState: UploaderState = {
 const ADD_FILES = 'state-uploader/ADD_FILES'
 const UPDATE_HANDSHAKE_DATA = 'state-uploader/UPDATE_DATA_CHANNEL'
 const CHANGE_DATA_READY = 'state-uploader/CHANGE_DATA_READY'
+const CHANGE_CURRENT_FILE = 'state-uploader/CHANGE_CURRENT_FILE'
+const CHANGE_BYTES_XFER = 'state-uploader/CHANGE_BYTES_XFER'
 
 type AddFiles = {
   files: ImageFile[]
@@ -32,9 +35,17 @@ type ChangeDataReady = {
   connectionState: ConnectionState
 } & Action<string>
 
+type ChangeCurrentFile = {
+  currentFile: FileStub
+} & Action<string>
+
+type ChangeBytesTransferred = {
+  bytesTransferred: number
+} & Action<string>
+
 export const reducer: Reducer<UploaderState, AnyAction> = (
   state: UploaderState = InitialState,
-  action: AddFiles | UpdateHandshake | ChangeDataReady
+  action: AddFiles | UpdateHandshake | ChangeDataReady | ChangeCurrentFile | ChangeBytesTransferred
 ) => {
   switch (action.type) {
     case ADD_FILES: {
@@ -64,6 +75,27 @@ export const reducer: Reducer<UploaderState, AnyAction> = (
       }
     }
 
+    case CHANGE_CURRENT_FILE: {
+      const { currentFile } = <ChangeCurrentFile>action
+
+      return {
+        ...state,
+        currentFile,
+      }
+    }
+
+    case CHANGE_BYTES_XFER: {
+      const { bytesTransferred } = <ChangeBytesTransferred>action
+
+      return {
+        ...state,
+        currentTransfer: {
+          buffer: [],
+          bytesTransferred,
+        },
+      }
+    }
+
     default:
       return state
   }
@@ -82,4 +114,14 @@ export const updateHandshakeData: ActionCreator<UpdateHandshake> = (handshakeApi
 export const changeDataReady: ActionCreator<ChangeDataReady> = (connectionState: ConnectionState) => ({
   type: CHANGE_DATA_READY,
   connectionState,
+})
+
+export const changeCurrentFile: ActionCreator<ChangeCurrentFile> = (currentFile: FileStub): ChangeCurrentFile => ({
+  type: CHANGE_CURRENT_FILE,
+  currentFile
+})
+
+export const changeBytesTransferred: ActionCreator<ChangeBytesTransferred> = (bytesTransferred: number): ChangeBytesTransferred => ({
+  type: CHANGE_BYTES_XFER,
+  bytesTransferred,
 })

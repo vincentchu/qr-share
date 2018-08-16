@@ -1,26 +1,21 @@
 import { Action, ActionCreator, Reducer, AnyAction } from 'redux'
-import { FileStub } from './shared'
-
-export type FileStore = {
-  bytesReceived: number
-  buffer: ArrayBuffer[]
-}
+import { FileStub, FileStore } from './shared'
 
 const keyFor = (stub: FileStub): string => [ stub.name, stub.size, stub.lastModified ].join('/')
 
 const emptyFileStore = (metadata: FileStub): FileStore => ({
-  bytesReceived: 0,
+  bytesTransferred: 0,
   buffer: [],
 })
 
 const updateTransfer = (currentTransfer: FileStore, chunk: ArrayBuffer): FileStore => ({
-  bytesReceived: currentTransfer.bytesReceived + chunk.byteLength,
+  bytesTransferred: currentTransfer.bytesTransferred + chunk.byteLength,
   buffer: currentTransfer.buffer.concat([ chunk ])
 })
 
 const completedFile = (currentFile: FileStub, currentTransfer: FileStore): File => {
-  if (currentFile.size !== currentTransfer.bytesReceived) {
-    throw new Error(`Received bytes note equal to file size ${currentTransfer.bytesReceived} != ${currentFile.size}`)
+  if (currentFile.size !== currentTransfer.bytesTransferred) {
+    throw new Error(`Received bytes note equal to file size ${currentTransfer.bytesTransferred} != ${currentFile.size}`)
   }
 
   const blob = new Blob(currentTransfer.buffer)

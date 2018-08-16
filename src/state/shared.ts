@@ -5,3 +5,8 @@ export type FileStub = {
   type?: string
 }
 
+export type FileStore = {
+  bytesTransferred: number
+  buffer: ArrayBuffer[]
+}
+

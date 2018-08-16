@@ -8,8 +8,8 @@ import FileWithPreview from './FileWithPreview'
 import loadingComponent from '../loading-component'
 import { WebsocketUrl } from '../url-helper'
 import HandshakeApi from '../../handshake-api'
-import { ReceiverState, FileStore } from '../../state/receiver'
-import { FileStub } from '../../state/shared'
+import { ReceiverState } from '../../state/receiver'
+import { FileStub, FileStore } from '../../state/shared'
 
 type RouteProps = {
   id: string
@@ -23,7 +23,7 @@ type ReceiveProps = {
 
 const Receive: React.SFC<ReceiveProps> = (props) => {
   const { currentFile, currentTransfer, files } = props
-  const percent = currentTransfer && currentFile && (100.0 * currentTransfer.bytesReceived / currentFile.size)
+  const percent = currentTransfer && currentFile && (100.0 * currentTransfer.bytesTransferred / currentFile.size)
 
   return (
     <div>
@@ -33,7 +33,7 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
         <div>
           <h3>Downloading { currentFile.name }</h3>
 
-          <p>{ currentTransfer.bytesReceived } / { currentFile.size } ({ percent }%)</p>
+          <p>{ currentTransfer.bytesTransferred } / { currentFile.size } ({ percent }%)</p>
         </div>
       ) }
 

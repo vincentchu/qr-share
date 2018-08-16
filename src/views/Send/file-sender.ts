@@ -2,7 +2,7 @@ import { ImageFile } from 'react-dropzone'
 import { Dispatch } from 'redux'
 
 import HandshakeApi from '../../handshake-api'
-import { changeDataReady } from '../../state/uploader'
+import { changeDataReady, changeCurrentFile, changeBytesTransferred } from '../../state/uploader'
 
 const ChunkSize = 16384
 
@@ -23,6 +23,7 @@ export const sendFiles = (files: ImageFile[], handshakeApi: HandshakeApi, dispat
 const streamChunk = (file: ImageFile, offset: number, handshakeApi: HandshakeApi, dispatch: Dispatch): Promise<any> => {
   return new Promise((resolve) => {
     const blob = file.slice(offset, offset + ChunkSize)
+    dispatch(changeBytesTransferred(offset))
     const reader = new FileReader()
     reader.onload = () => {
       const arrBuff: ArrayBuffer = reader.result
@@ -35,6 +36,8 @@ const streamChunk = (file: ImageFile, offset: number, handshakeApi: HandshakeApi
 
 const sendFile = (file: ImageFile, handshakeApi: HandshakeApi, dispatch: Dispatch): Promise<any> => {
   console.log('sendFile: starting stream', file.name, file.size)
+  dispatch(changeCurrentFile(file))
+
   return handshakeApi.send(JSON.stringify({
     action: 'start',
     name: file.name,
