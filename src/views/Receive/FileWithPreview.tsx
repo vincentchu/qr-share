@@ -10,7 +10,11 @@ const FileWithPreview: React.SFC<FileWithPreviewProps> = (props) => {
   const ref = (r: any) => {
     const reader = new FileReader()
     reader.readAsDataURL(file)
-    reader.onload = () => r.src = reader.result
+    reader.onload = () => {
+      if (r) {
+        r.src = reader.result
+      }
+    }
   }
 
   return (
