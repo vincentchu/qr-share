@@ -17,11 +17,15 @@ type SendProps = {
   connectionState?: ConnectionState
   currentFile?: FileStub
   currentTransfer?: FileTransfer
+  transferredFiles: Set<string>
   files: ImageFile[]
 } & DispatchProp
 
 const Send: React.SFC<SendProps> = (props) => {
-  const { id, files, dispatch, connectionState, currentFile, currentTransfer } = props
+  const {
+    id, files, dispatch, connectionState,
+    currentFile, currentTransfer, transferredFiles,
+  } = props
 
   const onDrop = (files: ImageFile[]) => {
     const handshakeApi = new HandshakeApi(WebsocketUrl, uuid(), 'offer')
@@ -43,7 +47,7 @@ const Send: React.SFC<SendProps> = (props) => {
       { !id && <FilePicker onDrop={onDrop} /> }
 
       { id && <Upload
-        id={id} files={files} connectionState={connectionState}
+        id={id} files={files} connectionState={connectionState} transferredFiles={transferredFiles}
         currentFile={currentFile} currentTransfer={currentTransfer}
       /> }
 
@@ -55,7 +59,11 @@ const Send: React.SFC<SendProps> = (props) => {
 const mapStateToProps = (state: {
   uploader: UploaderState,
 }) => {
-  const { files, handshakeApi, connectionState, currentFile, currentTransfer } = state.uploader
+  const {
+    files, handshakeApi, connectionState,
+    currentFile, currentTransfer, transferredFiles,
+  } = state.uploader
+
   const id = handshakeApi && handshakeApi.id
 
   return {
@@ -64,6 +72,7 @@ const mapStateToProps = (state: {
     connectionState,
     currentFile,
     currentTransfer,
+    transferredFiles,
   }
 }
 

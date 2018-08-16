@@ -16,6 +16,11 @@ $font-family-sans-serif: 'Roboto', 'Helvetica Nueue', Helvetica, sans-serif;
     margin: 3px;
     background-repeat: no-repeat;
     background-size: cover;
+    opacity: 0.1;
+  }
+
+  .transferred {
+    opacity: 1;
   }
 }
 

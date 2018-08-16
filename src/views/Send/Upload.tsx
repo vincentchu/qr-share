@@ -15,10 +15,11 @@ type UploadProps = {
   connectionState: ConnectionState
   currentFile?: FileStub
   currentTransfer?: FileTransfer
+  transferredFiles: Set<string>
 }
 
 const Upload: React.SFC<UploadProps> = (props) => {
-  const { id, files, connectionState, currentFile, currentTransfer } = props
+  const { id, files, connectionState, currentFile, currentTransfer, transferredFiles } = props
   const url = urlForReceive(id)
 
   return (
@@ -27,7 +28,8 @@ const Upload: React.SFC<UploadProps> = (props) => {
         <a href={url}>
           <QRCode value={url} level="Q" size={200} />
         </a>
-        <FileList files={files} />
+
+        <FileList files={files} transferredFiles={transferredFiles} />
 
         <Progress
           connectionState={connectionState}

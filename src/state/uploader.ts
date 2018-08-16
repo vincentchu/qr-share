@@ -10,11 +10,13 @@ export type UploaderState = {
   handshakeApi?: HandshakeApi
   currentFile?: FileStub
   currentTransfer?: FileTransfer
+  transferredFiles: Set<string>
 }
 
 const InitialState: UploaderState = {
   files: [],
   connectionState: 'connecting',
+  transferredFiles: new Set(),
 }
 
 const ADD_FILES = 'state-uploader/ADD_FILES'
@@ -77,10 +79,14 @@ export const reducer: Reducer<UploaderState, AnyAction> = (
 
     case CHANGE_CURRENT_FILE: {
       const { currentFile } = <ChangeCurrentFile>action
+      const { transferredFiles } = state
+
+      currentFile && transferredFiles.add(currentFile.name)
 
       return {
         ...state,
         currentFile,
+        transferredFiles,
       }
     }
 
