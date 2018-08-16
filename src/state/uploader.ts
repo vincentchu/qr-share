@@ -2,20 +2,18 @@ import { Action, ActionCreator, Reducer, AnyAction } from 'redux'
 import { ImageFile } from 'react-dropzone'
 
 import { FileStub } from './shared'
-import HandshakeApi from '../handshake-api'
-
-export type ReadyState = 'not-ready' | 'ready'
+import HandshakeApi, { ConnectionState } from '../handshake-api'
 
 export type UploaderState = {
   files: ImageFile[]
-  dataChannelState: ReadyState
+  connectionState: ConnectionState
   handshakeApi?: HandshakeApi
   currentFile?: FileStub
 }
 
 const InitialState: UploaderState = {
   files: [],
-  dataChannelState: 'not-ready',
+  connectionState: 'connecting',
 }
 
 const ADD_FILES = 'state-uploader/ADD_FILES'
@@ -31,7 +29,7 @@ type UpdateHandshake = {
 } & Action<string>
 
 type ChangeDataReady = {
-  dataChannelState: ReadyState
+  connectionState: ConnectionState
 } & Action<string>
 
 export const reducer: Reducer<UploaderState, AnyAction> = (
@@ -58,11 +56,11 @@ export const reducer: Reducer<UploaderState, AnyAction> = (
     }
 
     case CHANGE_DATA_READY: {
-      const { dataChannelState } = <ChangeDataReady>action
+      const { connectionState } = <ChangeDataReady>action
 
       return {
         ...state,
-        dataChannelState,
+        connectionState,
       }
     }
 
@@ -81,7 +79,7 @@ export const updateHandshakeData: ActionCreator<UpdateHandshake> = (handshakeApi
   handshakeApi,
 })
 
-export const changeDataReady: ActionCreator<ChangeDataReady> = (dataChannelState: ReadyState) => ({
+export const changeDataReady: ActionCreator<ChangeDataReady> = (connectionState: ConnectionState) => ({
   type: CHANGE_DATA_READY,
-  dataChannelState,
+  connectionState,
 })

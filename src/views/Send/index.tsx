@@ -6,16 +6,17 @@ import * as QRCode from 'qrcode.react'
 
 import { sendFiles } from './file-sender'
 import { urlForReceive, WebsocketUrl } from '../url-helper'
-import HandshakeApi from '../../handshake-api'
+import HandshakeApi, { ConnectionState } from '../../handshake-api'
 import { UploaderState, addFiles, updateHandshakeData } from '../../state/uploader'
 
 type SendProps = {
   id?: string
+  connectionState?: ConnectionState
   files: ImageFile[]
 } & DispatchProp
 
 const Send: React.SFC<SendProps> = (props) => {
-  const { id, files, dispatch } = props
+  const { id, files, dispatch, connectionState } = props
   const url = id && urlForReceive(id)
 
   const onDrop = (files: ImageFile[]) => {
@@ -24,13 +25,11 @@ const Send: React.SFC<SendProps> = (props) => {
     // @ts-ignore
     window.h = handshakeApi
 
-
     dispatch(addFiles(files))
     dispatch(updateHandshakeData(handshakeApi))
 
     handshakeApi.startHandshake().then(() => {
       console.log('Handshake Done!')
-
       sendFiles(files, handshakeApi, dispatch)
     })
   }
@@ -38,6 +37,8 @@ const Send: React.SFC<SendProps> = (props) => {
   return (
     <div>
       <h1>QR Share { window.VERSION }</h1>
+
+      { connectionState && <div>{ connectionState }</div> }
 
       <div className="dropzone">
         <Dropzone onDrop={onDrop}>
@@ -71,10 +72,10 @@ const Send: React.SFC<SendProps> = (props) => {
 const mapStateToProps = (state: {
   uploader: UploaderState,
 }) => {
-  const { files, handshakeApi } = state.uploader
+  const { files, handshakeApi, connectionState } = state.uploader
   const id = handshakeApi && handshakeApi.id
 
-  return { id, files }
+  return { id, files, connectionState }
 }
 
 export default connect(mapStateToProps)(Send)

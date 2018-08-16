@@ -37,7 +37,7 @@ const makeConfig = () => {
 
 export type DataSender = (data: string | ArrayBuffer) => Promise<void>
 
-type ConnectionState = 'connecting' | 'webrtc' | 'websocket'
+export type ConnectionState = 'connecting' | 'webrtc' | 'websocket'
 
 type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate' | 'data-string' | 'data-binary'
 
