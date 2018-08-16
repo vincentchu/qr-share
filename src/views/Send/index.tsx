@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
-import Dropzone, { ImageFile } from 'react-dropzone'
+import { ImageFile } from 'react-dropzone'
 import * as uuid from 'uuid/v1'
-import * as QRCode from 'qrcode.react'
 
 import FilePicker from './FilePicker'
+import Upload from './Upload'
 import { sendFiles } from './file-sender'
 import Footer from '../Footer'
-import { urlForReceive, WebsocketUrl } from '../url-helper'
+import { WebsocketUrl } from '../url-helper'
 import HandshakeApi, { ConnectionState } from '../../handshake-api'
 import { UploaderState, addFiles, updateHandshakeData } from '../../state/uploader'
 
@@ -19,7 +19,6 @@ type SendProps = {
 
 const Send: React.SFC<SendProps> = (props) => {
   const { id, files, dispatch, connectionState } = props
-  const url = id && urlForReceive(id)
 
   const onDrop = (files: ImageFile[]) => {
     const handshakeApi = new HandshakeApi(WebsocketUrl, uuid(), 'offer')
@@ -39,6 +38,10 @@ const Send: React.SFC<SendProps> = (props) => {
   return (
     <div>
       { !id && <FilePicker onDrop={onDrop} /> }
+
+      { id && <Upload
+        id={id} files={files} connectionState={connectionState}
+      /> }
 
       <Footer />
     </div>
