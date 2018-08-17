@@ -56,13 +56,13 @@ generateKey().then((key) => {
   const iv2 = kiv2.iv
   const k2 = kiv2.key
 
-  console.log('IV EQUAL', iv1 === iv2)
+  console.log('IV EQUAL', iv1, iv2)
   const iv = iv1
 
-  encryptString('hello, there', k1, iv).then((eStr) => {
+  encryptString('hello, there', kiv1).then((eStr) => {
     console.log('ENCRYPTED STR', eStr)
 
-    return decryptstring(eStr, k2, iv).then((dStr) => {
+    return decryptstring(eStr, kiv2).then((dStr) => {
       console.log('DECRYPTED', dStr)
     })
   })

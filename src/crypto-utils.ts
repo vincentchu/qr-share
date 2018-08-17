@@ -59,11 +59,22 @@ export const encrypt: DataBijection = (data: Data): Promise<Data> => {
 
   return Promise.resolve(data)
 }
+// export const encryptArrayBuffer = (data: ArrayBuffer, keyIV: KeyIV): PromiseLike<string> => {
+//   const { key, iv } = keyIV
+//   const bytes = new Uint8Array(data)
 
-export const encryptString = (data: string, key: CryptoKey, iv: Uint8Array): PromiseLike<string> => {
+//   return crypto.subtle.encrypt({ name: AESAlgo, iv }, key, bytes)
+//     .then((encryptedBuffer) => {
+//       const encryptedBytes = new Uint8Array(encryptedBuffer)
+
+//       return base64.fromByteArray(encryptedBytes)
+//     })
+// }
+
+export const encryptString = (data: string, keyIV: KeyIV): PromiseLike<string> => {
+  const { key, iv } = keyIV
   const encoder = new TextEncoder()
   const bytes = encoder.encode(data)
-  console.log('STR BYTES', bytes)
 
   return crypto.subtle.encrypt({ name: AESAlgo, iv }, key, bytes)
     .then((encryptedBuffer) => {
@@ -73,24 +84,15 @@ export const encryptString = (data: string, key: CryptoKey, iv: Uint8Array): Pro
     })
 }
 
-export const decryptstring = (encrypted: string, key: CryptoKey, iv: Uint8Array): PromiseLike<string> => {
+export const decryptstring = (encrypted: string, keyIV: KeyIV): PromiseLike<string> => {
+  const { key, iv } = keyIV
   const encryptedBytes = <ArrayBuffer>base64.toByteArray(encrypted).buffer
 
   return crypto.subtle.decrypt({ name: AESAlgo, iv }, key, encryptedBytes).then((plaintextBytes) => {
-
-    // return String.fromCharCode.apply(null, new Uint16Array(plaintextBytes));
-
-
     const arr = new Uint8Array(plaintextBytes, 0, plaintextBytes.byteLength)
-    // @ts-ignore
-    window.arr = arr
-
-    console.log('DECRYPT BYTES', arr)
-
     const dec = new TextDecoder('utf-8')
-    return dec.decode(arr)
 
-    // return base64.fromByteArray(new Uint8Array(plaintextBytes, 0, plaintextBytes.byteLength))
+    return dec.decode(arr)
   })
 }
 
