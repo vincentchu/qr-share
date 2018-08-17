@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <meta name="referrer" content="no-referrer">
     <title>QQSend</title>
-    <link href="http://fonts.googleapis.com/css?family=Roboto:100,300,400,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/toolkit-minimal.min.css">
     <script src="/version.js?version={{ version }}"></script>
     <script src="/config.js?version={{ version }}"></script>
