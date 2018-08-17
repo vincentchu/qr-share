@@ -1,7 +1,7 @@
 import * as uuid from 'uuid/v1'
 import * as base64 from 'base64-js'
 
-import { KeyIV } from './crypto-utils'
+import { encrypt, decrypt, KeyIV } from './crypto-utils'
 import { waitFor, resolveAfter } from './promise-utils'
 
 const GoogleStun = 'stun:stun.l.google.com:19302'
@@ -204,6 +204,12 @@ class HandshakeApi {
         break
     }
 
+    if (this.onData) {
+      const dataToSend = this.keyIV ? decrypt(data, this.keyIV) : Promise.resolve(data)
+
+      dataToSend.then(this.onData)
+    }
+
     this.onData && this.onData(data)
   }
 
@@ -263,7 +269,13 @@ class HandshakeApi {
       const { channel } = evt
 
       if (channel.label === 'data') {
-        channel.onmessage = ({ data }) => this.onData && this.onData(data)
+        channel.onmessage = ({ data }: { data: string | ArrayBuffer }) => {
+          if (this.onData) {
+            const dataToSend = this.keyIV ? decrypt(data, this.keyIV) : Promise.resolve(data)
+
+            dataToSend.then(this.onData)
+          }
+        }
       }
     }
   }
@@ -323,17 +335,21 @@ class HandshakeApi {
       .then(this.setDataListeners)
   }
 
-  send: DataSender = (data): Promise<void> => {
-    switch (this.connectionState) {
-      case 'webrtc':
-        return Promise.resolve(this.rtcDataChannel.send(data))
+  send: DataSender = (data): PromiseLike<void> => {
+    const dataPromise = this.keyIV ? encrypt(data, this.keyIV) : Promise.resolve(data)
 
-      case 'websocket':
-        return this.sendFallback(data)
+    dataPromise.then((dataToSend) => {
+      switch (this.connectionState) {
+        case 'webrtc':
+          return Promise.resolve(this.rtcDataChannel.send(dataToSend))
 
-      default:
-        return Promise.reject(`HandshakeApi: invalid connectionState: ${this.connectionState}`)
-    }
+        case 'websocket':
+          return this.sendFallback(data)
+
+        default:
+          return Promise.reject(`HandshakeApi: invalid connectionState: ${this.connectionState}`)
+      }
+    })
   }
 }
 
