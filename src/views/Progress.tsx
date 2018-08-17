@@ -43,7 +43,7 @@ const Progress: React.SFC<ProgressProps> = (props) => {
 
       { currentFile && currentTransfer && (
         <div className="current-file row justify-content-center text-muted font-weight-light">
-          <div className="col-3">
+          <div className="col-8">
             { currentFile.name }
             <div className="bar progress">
               <div className="progress-bar" style={{ width }} />

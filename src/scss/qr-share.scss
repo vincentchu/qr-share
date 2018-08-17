@@ -8,6 +8,7 @@ $font-family-sans-serif: 'Roboto', 'Helvetica Nueue', Helvetica, sans-serif;
   align-content: center;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   margin-top: 30px;
 
   .preview {
@@ -42,10 +43,9 @@ $font-family-sans-serif: 'Roboto', 'Helvetica Nueue', Helvetica, sans-serif;
     width: 200px;
     height: 260px;
     margin: 30px;
-    align-items: center;
 
     .gallery-img {
-      width: 195px;
+      width: 197px;
       height: 150px;
       background-repeat: no-repeat;
     }
