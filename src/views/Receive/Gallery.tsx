@@ -1,6 +1,15 @@
 import * as React from 'react'
 import * as filesize from 'filesize'
 
+const loadFile = (file: File): Promise<FileReader> => {
+  const reader = new FileReader()
+  reader.readAsDataURL(file)
+
+  return new Promise((resolve) => {
+    reader.onload = () => resolve(reader)
+  })
+}
+
 type CardProps = {
   file: File
 }
@@ -10,19 +19,16 @@ const FileStyle = 'background-image: url(\'/file.svg\'); background-size: contai
 const Card: React.SFC<CardProps> = (props) => {
   const { file } = props
   const isImg = !!file.type.match(/^image/)
+  const readerPromise = loadFile(file)
 
   const ref = (div: any) => {
     console.log('isImg', isImg)
-    if (isImg) {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        if (div) {
+    if (div) {
+      if (isImg) {
+        readerPromise.then((reader) => {
           div.style = `background-image: url('${reader.result}'); background-size: cover;`
-        }
-      }
-    } else {
-      if (div) {
+        })
+      } else {
         div.style = FileStyle
       }
     }
@@ -30,14 +36,10 @@ const Card: React.SFC<CardProps> = (props) => {
 
   const aRef = (a: any) => {
     if (a) {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        if (a) {
-          a.href = reader.result
-        }
-      }
-      a.download = file.name
+      readerPromise.then((reader) => {
+        a.download = file.name
+        a.href = reader.result
+      })
     }
   }
 
@@ -69,7 +71,6 @@ type GalleryProps = {
 const Gallery: React.SFC<GalleryProps> = (props) => {
   const { files } = props
 
-  console.log('FILES', files)
   return (
     <div className="gallery">
       { files.map((file) => <Card key={file.name} file={file} /> )}

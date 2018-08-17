@@ -1,4 +1,4 @@
-export const ProdHost = 'qr-share.herokuapp.com'
+export const ProdHost = 'qqsend.me'
 export const DevHost = 'localhost:8080'
 
 export const ProdWebsocketUrl = `${ProdHost}/ws`
