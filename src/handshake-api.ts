@@ -1,6 +1,7 @@
 import * as uuid from 'uuid/v1'
 import * as base64 from 'base64-js'
 
+import { KeyIV } from './crypto-utils'
 import { waitFor, resolveAfter } from './promise-utils'
 
 const GoogleStun = 'stun:stun.l.google.com:19302'
@@ -53,7 +54,7 @@ class HandshakeApi {
   private ws: WebSocket
   private openMessages: { [id: string ]: () => void }
   private remoteSet: Promise<any>
-  rtcDataChannel: RTCDataChannel
+  private rtcDataChannel: RTCDataChannel
 
   url: string
   id: string
@@ -61,6 +62,8 @@ class HandshakeApi {
   peerConnection: RTCPeerConnection
   connectionState: ConnectionState
   onData?: DataSender
+  keyIV?: KeyIV
+  exportedKeyIV?: string
 
   constructor(baseUrl: string, id: string, scope: ScopeType) {
     const scopeVal = scope === 'offer' ? 0 : 1

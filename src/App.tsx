@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
 
-import { generateKey, exportKey, importKey, encrypt, decrypt } from './crypto-utils'
 import  './scss/qr-share.scss'
 
 type AppProps = {

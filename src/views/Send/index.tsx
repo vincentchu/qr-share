@@ -8,12 +8,14 @@ import Upload from './Upload'
 import { sendFiles } from './file-sender'
 import Footer from '../Footer'
 import { WebsocketUrl } from '../url-helper'
+import { generateKey, exportKey } from '../../crypto-utils'
 import HandshakeApi, { ConnectionState } from '../../handshake-api'
 import { UploaderState, addFiles, updateHandshakeData } from '../../state/uploader'
 import { FileStub, FileTransfer } from '../../state/shared'
 
 type SendProps = {
   id?: string
+  keyIV?: string
   connectionState?: ConnectionState
   currentFile?: FileStub
   currentTransfer?: FileTransfer
@@ -23,7 +25,7 @@ type SendProps = {
 
 const Send: React.SFC<SendProps> = (props) => {
   const {
-    id, files, dispatch, connectionState,
+    id, keyIV, files, dispatch, connectionState,
     currentFile, currentTransfer, transferredFiles,
   } = props
 
@@ -34,11 +36,17 @@ const Send: React.SFC<SendProps> = (props) => {
     window.h = handshakeApi
 
     dispatch(addFiles(files))
-    dispatch(updateHandshakeData(handshakeApi))
+    generateKey().then((keyIV) => {
+      return exportKey(keyIV).then((exportedKeyIV) => {
+        handshakeApi.keyIV = keyIV
+        handshakeApi.exportedKeyIV = exportedKeyIV
+        dispatch(updateHandshakeData(handshakeApi))
 
-    handshakeApi.startHandshake().then(() => {
-      console.log('Handshake Done!')
-      sendFiles(files, handshakeApi, dispatch)
+        return handshakeApi.startHandshake().then(() => {
+          console.log('Handshake Done!')
+          sendFiles(files, handshakeApi, dispatch)
+        })
+      })
     })
   }
 
@@ -46,9 +54,9 @@ const Send: React.SFC<SendProps> = (props) => {
     <div>
       { !id && <FilePicker onDrop={onDrop} /> }
 
-      { id && <Upload
+      { (id && keyIV) && <Upload
         id={id} files={files} connectionState={connectionState} transferredFiles={transferredFiles}
-        currentFile={currentFile} currentTransfer={currentTransfer}
+        currentFile={currentFile} currentTransfer={currentTransfer} keyIV={keyIV}
       /> }
 
       <Footer />
@@ -65,9 +73,11 @@ const mapStateToProps = (state: {
   } = state.uploader
 
   const id = handshakeApi && handshakeApi.id
+  const keyIV = handshakeApi && handshakeApi.exportedKeyIV
 
   return {
     id,
+    keyIV,
     files,
     connectionState,
     currentFile,

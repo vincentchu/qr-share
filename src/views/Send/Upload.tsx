@@ -11,6 +11,7 @@ import { FileStub, FileTransfer } from '../../state/shared'
 
 type UploadProps = {
   id: string
+  keyIV: string
   files: ImageFile[]
   connectionState: ConnectionState
   currentFile?: FileStub
@@ -19,8 +20,8 @@ type UploadProps = {
 }
 
 const Upload: React.SFC<UploadProps> = (props) => {
-  const { id, files, connectionState, currentFile, currentTransfer, transferredFiles } = props
-  const url = urlForReceive(id)
+  const { id, keyIV, files, connectionState, currentFile, currentTransfer, transferredFiles } = props
+  const url = urlForReceive(id, keyIV)
 
   return (
     <div className="row justify-content-center">
