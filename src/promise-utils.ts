@@ -29,3 +29,9 @@ export const promisifyWithTimeout = <T>(promise: Promise<T>, millis: number): Pr
 
   return Promise.race([promise, timeoutPromise])
 }
+
+export const promiseLikeToPromise = <T>(promiseLike: PromiseLike<T>): Promise<T> => {
+  return new Promise((resolve) => {
+    promiseLike.then(resolve)
+  })
+}

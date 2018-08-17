@@ -335,10 +335,10 @@ class HandshakeApi {
       .then(this.setDataListeners)
   }
 
-  send: DataSender = (data): PromiseLike<void> => {
+  send: DataSender = (data): Promise<void> => {
     const dataPromise = this.keyIV ? encrypt(data, this.keyIV) : Promise.resolve(data)
 
-    dataPromise.then((dataToSend) => {
+    return dataPromise.then((dataToSend) => {
       switch (this.connectionState) {
         case 'webrtc':
           return Promise.resolve(this.rtcDataChannel.send(dataToSend))

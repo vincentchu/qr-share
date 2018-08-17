@@ -22,7 +22,6 @@ const Card: React.SFC<CardProps> = (props) => {
   const readerPromise = loadFile(file)
 
   const ref = (div: any) => {
-    console.log('isImg', isImg)
     if (div) {
       if (isImg) {
         readerPromise.then((reader) => {
