@@ -50,7 +50,7 @@ const Card: React.SFC<CardProps> = (props) => {
           <h5 className="card-title">{ file.name }</h5>
         </div>
         <p className="card-text">
-          <a ref={aRef}>
+          <a ref={aRef} target="_blank">
             <img className="download" src="/cloud-download.svg" />
             { filesize(file.size, ) }
           </a>
