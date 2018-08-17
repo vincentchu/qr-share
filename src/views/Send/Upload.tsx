@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { ImageFile } from 'react-dropzone'
 import * as QRCode from 'qrcode.react'
+import { isNil } from 'ramda'
 
 import FileList from './FileList'
 import Progress from '../Progress'
@@ -22,6 +23,7 @@ type UploadProps = {
 const Upload: React.SFC<UploadProps> = (props) => {
   const { id, keyIV, files, connectionState, currentFile, currentTransfer, transferredFiles } = props
   const url = urlForReceive(id, keyIV)
+  const isDone = (transferredFiles.size > 0) && isNil(currentFile)
 
   return (
     <div className="row justify-content-center">
@@ -36,6 +38,14 @@ const Upload: React.SFC<UploadProps> = (props) => {
           connectionState={connectionState}
           currentFile={currentFile} currentTransfer={currentTransfer}
         />
+
+        {isDone && (
+          <div className="finished">
+            <a className="btn btn-success btn-lg" href="/" role="button">
+              Transfer Complete. Send More?
+            </a>
+          </div>
+        ) }
       </div>
       <StepBlock
         header="Step 2: Scan QR code"
