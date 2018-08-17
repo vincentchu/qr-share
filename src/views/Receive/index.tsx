@@ -15,6 +15,7 @@ import { importKey } from '../../crypto-utils'
 import HandshakeApi, { ConnectionState } from '../../handshake-api'
 import { ReceiverState } from '../../state/receiver'
 import { FileStub, FileTransfer } from '../../state/shared'
+import { trackConnectionMethod } from '../../analytics';
 
 type RouteProps = {
   id: string
@@ -57,7 +58,6 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
     location: { hash },
   } = props
 
-  console.log('HASH', hash)
   const handshakeApi = new HandshakeApi(WebsocketUrl, id, 'answer')
   handshakeApi.onData = receiveFiles(dispatch, handshakeApi)
 
@@ -65,6 +65,7 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   window.h = handshakeApi
 
   importKey(hash.slice(1)).then((keyIV) => handshakeApi.keyIV = keyIV)
+  setTimeout(() => trackConnectionMethod(handshakeApi.connectionState, handshakeApi.scope), 2000)
 
   return handshakeApi.receiveHandshake()
 }

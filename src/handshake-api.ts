@@ -48,7 +48,7 @@ type HandshakeApiMessage = {
   data: string
 }
 
-type ScopeType = 'offer' | 'answer'
+export type ScopeType = 'offer' | 'answer'
 
 class HandshakeApi {
   private ws: WebSocket

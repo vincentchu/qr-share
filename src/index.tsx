@@ -15,6 +15,7 @@ declare global {
     USERNAME: string
     PASSWORD: string
     isModern: boolean
+    ga?: any
   }
 }
 

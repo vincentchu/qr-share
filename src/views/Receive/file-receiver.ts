@@ -1,7 +1,8 @@
 import { Dispatch } from 'redux'
 
-import { startFile, endFile, addChunk, changeConnectionState } from '../../state/receiver'
+import { trackFileSize } from '../../analytics'
 import HandshakeApi, { DataSender } from '../../handshake-api'
+import { startFile, endFile, addChunk, changeConnectionState } from '../../state/receiver'
 
 type ActionMessage = {
   action: string
@@ -20,6 +21,7 @@ export const receiveFiles = (dispatch: Dispatch, handshakeApi: HandshakeApi): Da
     switch (mesg.action) {
       case 'start':
         dispatch((startFile(mesg)))
+        trackFileSize(handshakeApi.scope, mesg.size)
         break
 
       case 'end':
