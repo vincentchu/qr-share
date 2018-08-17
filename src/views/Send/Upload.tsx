@@ -38,8 +38,8 @@ const Upload: React.SFC<UploadProps> = (props) => {
         />
       </div>
       <StepBlock
-        header="Step 2: Scan QR code or share link"
-        subHeader="Note: Expires in ~15 seconds"
+        header="Step 2: Scan QR code"
+        subHeader="Don't worry, your files are sent with 256-bit AES encryption"
       />
     </div>
   )
