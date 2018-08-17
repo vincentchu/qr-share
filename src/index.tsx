@@ -14,6 +14,7 @@ declare global {
     VERSION: string
     USERNAME: string
     PASSWORD: string
+    isModern: boolean
   }
 }
 
