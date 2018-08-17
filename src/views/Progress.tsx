@@ -1,8 +1,8 @@
 import * as React from 'react'
 import classnames from 'classnames'
 
-import { ConnectionState } from '../../handshake-api'
-import { FileStub, FileTransfer } from '../../state/shared'
+import { ConnectionState } from '../handshake-api'
+import { FileStub, FileTransfer } from '../state/shared'
 
 type ProgressProps = {
   connectionState: ConnectionState

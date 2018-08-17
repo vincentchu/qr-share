@@ -16,7 +16,7 @@ $font-family-sans-serif: 'Roboto', 'Helvetica Nueue', Helvetica, sans-serif;
     margin: 3px;
     background-repeat: no-repeat;
     background-size: cover;
-    opacity: 0.1;
+    opacity: 0.5;
   }
 
   .transferred {
@@ -26,4 +26,26 @@ $font-family-sans-serif: 'Roboto', 'Helvetica Nueue', Helvetica, sans-serif;
 
 .current-file {
   margin-top: 30px;
+}
+
+.gallery {
+  margin: 40px 0px;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 90%;
+
+  .gallery-card {
+    width: 200px;
+    margin: 30px;
+
+    .gallery-img {
+      width: 200px;
+      height: 150px;
+      background-repeat: no-repeat;
+    }
+  }
 }

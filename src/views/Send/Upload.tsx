@@ -3,7 +3,7 @@ import { ImageFile } from 'react-dropzone'
 import * as QRCode from 'qrcode.react'
 
 import FileList from './FileList'
-import Progress from './Progress'
+import Progress from '../Progress'
 import StepBlock from '../StepBlock'
 import { urlForReceive } from '../url-helper'
 import { ConnectionState } from '../../handshake-api'
@@ -25,7 +25,7 @@ const Upload: React.SFC<UploadProps> = (props) => {
   return (
     <div className="row justify-content-center">
       <div className="block text-center">
-        <a href={url}>
+        <a href={url} target="_blank">
           <QRCode value={url} level="Q" size={200} />
         </a>
 

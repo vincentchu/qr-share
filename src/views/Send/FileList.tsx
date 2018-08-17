@@ -22,7 +22,7 @@ const Preview: React.SFC<PreviewProps> = (props) => {
   if (type.match(/^image/) && src) {
     style = {
       ...style,
-      backgroundImage: `url(\'${src}\')`,
+      backgroundImage: `url('${src}')`,
       backgroundPositionX: '0px',
       backgroundSize: 'cover',
     }

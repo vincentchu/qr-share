@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux'
 
-import { startFile, endFile, addChunk } from '../../state/receiver'
-import { DataSender } from '../../handshake-api'
+import { startFile, endFile, addChunk, changeConnectionState } from '../../state/receiver'
+import HandshakeApi, { DataSender } from '../../handshake-api'
 
 type ActionMessage = {
   action: string
@@ -12,7 +12,9 @@ type ActionMessage = {
   lastModified?: number
 }
 
-export const receiveFiles = (dispatch: Dispatch): DataSender => (data: string | ArrayBuffer) => {
+export const receiveFiles = (dispatch: Dispatch, handshakeApi: HandshakeApi): DataSender => (data: string | ArrayBuffer) => {
+  dispatch(changeConnectionState(handshakeApi.connectionState))
+
   if (typeof data === 'string') {
     const mesg: ActionMessage = JSON.parse(data)
     switch (mesg.action) {

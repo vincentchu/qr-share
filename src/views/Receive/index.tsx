@@ -1,13 +1,17 @@
 import * as React from 'react'
 import { RouteComponentProps } from 'react-router'
 import { Dispatch } from 'redux'
+import { isNil } from 'ramda'
 import { connect, DispatchProp } from 'react-redux'
 
 import { receiveFiles } from './file-receiver'
-import FileWithPreview from './FileWithPreview'
+import Gallery from './Gallery'
 import loadingComponent from '../loading-component'
+import Progress from '../Progress'
+import Footer from '../Footer'
+import StepBlock from '../StepBlock'
 import { WebsocketUrl } from '../url-helper'
-import HandshakeApi from '../../handshake-api'
+import HandshakeApi, { ConnectionState } from '../../handshake-api'
 import { ReceiverState } from '../../state/receiver'
 import { FileStub, FileTransfer } from '../../state/shared'
 
@@ -16,36 +20,32 @@ type RouteProps = {
 }
 
 type ReceiveProps = {
+  connectionState: ConnectionState
   currentFile?: FileStub
   currentTransfer?: FileTransfer
   files: File[]
 } & RouteComponentProps<RouteProps> & DispatchProp
 
 const Receive: React.SFC<ReceiveProps> = (props) => {
-  const { currentFile, currentTransfer, files } = props
-  const percent = currentTransfer && currentFile && (100.0 * currentTransfer.bytesTransferred / currentFile.size)
+  const { connectionState, currentFile, currentTransfer, files } = props
+
+  const isDone = isNil(currentFile) && files.length > 0
+  const header = isDone ? 'Transfer Completed' : 'Receiving Files'
 
   return (
-    <div>
-      <h1>Receive Share { window.VERSION }</h1>
-
-      { currentTransfer && currentFile && (
-        <div>
-          <h3>Downloading { currentFile.name }</h3>
-
-          <p>{ currentTransfer.bytesTransferred } / { currentFile.size } ({ percent }%)</p>
-        </div>
-      ) }
-
-      <div>
-        <h3>Files Completed</h3>
-
-        <ul>
-          { files.map((file) => (
-            <FileWithPreview key={file.name} file={file} />
-          )) }
-        </ul>
+    <div className="row justify-content-center">
+      <div className="block text-center">
+        { !isDone && <Progress
+          connectionState={connectionState}
+          currentFile={currentFile} currentTransfer={currentTransfer}
+        /> }
       </div>
+
+      <Gallery files={files} />
+
+      <StepBlock header={header} subHeader="" />
+
+      <Footer />
     </div>
   )
 }
@@ -56,7 +56,7 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   } = props
 
   const handshakeApi = new HandshakeApi(WebsocketUrl, id, 'answer')
-  handshakeApi.onData = receiveFiles(dispatch)
+  handshakeApi.onData = receiveFiles(dispatch, handshakeApi)
 
   // @ts-ignore
   window.h = handshakeApi
@@ -64,15 +64,16 @@ const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   return handshakeApi.receiveHandshake()
 }
 
-const mapStateToProps = (state: {
-  receiver: ReceiverState
-}) => {
-  const { currentFile, currentTransfer, completedFiles } = state.receiver
+const mapStateToProps = (
+  state: { receiver: ReceiverState },
+) => {
+  const { currentFile, currentTransfer, completedFiles, connectionState } = state.receiver
 
   const keys = Object.keys(completedFiles)
   const files = keys.map((key) => completedFiles[key])
 
   return {
+    connectionState,
     currentFile,
     currentTransfer,
     files,

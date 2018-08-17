@@ -188,6 +188,8 @@ class HandshakeApi {
   }
 
   private handleData = (mesg: HandshakeApiMessage) => {
+    this.connectionState = 'websocket'
+
     let data
     switch (mesg.mesgType) {
       case 'data-string':
@@ -254,6 +256,7 @@ class HandshakeApi {
 
   private setDataListeners = () => {
     this.peerConnection.ondatachannel = (evt) => {
+      this.connectionState = 'webrtc'
       const { channel } = evt
 
       if (channel.label === 'data') {

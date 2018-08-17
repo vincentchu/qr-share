@@ -1,5 +1,6 @@
 import { Action, ActionCreator, Reducer, AnyAction } from 'redux'
 import { FileStub, FileTransfer } from './shared'
+import { ConnectionState } from '../handshake-api'
 
 const keyFor = (stub: FileStub): string => [ stub.name, stub.size, stub.lastModified ].join('/')
 
@@ -29,6 +30,7 @@ const completedFile = (currentFile: FileStub, currentTransfer: FileTransfer): Fi
 }
 
 export type ReceiverState = {
+  connectionState: ConnectionState
   currentFile?: FileStub
   currentTransfer?: FileTransfer
   completedFiles: {
@@ -37,12 +39,14 @@ export type ReceiverState = {
 }
 
 const InitialState: ReceiverState = {
-  completedFiles: {}
+  connectionState: 'connecting',
+  completedFiles: {},
 }
 
 const START_FILE = 'state-receiver/START_FILE'
 const END_FILE = 'state-receiver/END_FILE'
 const ADD_CHUNK = 'state-receiver/ADD_CHUNK'
+const CHANGE_STATE = 'state-receiver/CHANGE_STATE'
 
 type StartFileAction = {
   currentFile: FileStub
@@ -54,9 +58,13 @@ type AddChunkAction = {
   chunk: ArrayBuffer
 } & Action<string>
 
+type ChangeConnectionStateAction = {
+  connectionState: ConnectionState
+} & Action<string>
+
 export const reducer: Reducer<ReceiverState, AnyAction> = (
   state: ReceiverState = InitialState,
-  action: StartFileAction | EndFileAction | AddChunkAction
+  action: StartFileAction | EndFileAction | AddChunkAction | ChangeConnectionStateAction
 ) => {
   switch (action.type) {
     case START_FILE: {
@@ -101,6 +109,14 @@ export const reducer: Reducer<ReceiverState, AnyAction> = (
       }
     }
 
+    case CHANGE_STATE: {
+      const { connectionState } = <ChangeConnectionStateAction>action
+      return {
+        ...state,
+        connectionState,
+      }
+    }
+
     default:
       return state
   }
@@ -116,4 +132,9 @@ export const endFile: ActionCreator<EndFileAction> = () => ({ type: END_FILE })
 export const addChunk: ActionCreator<AddChunkAction> = (chunk: ArrayBuffer) => ({
   type: ADD_CHUNK,
   chunk,
+})
+
+export const changeConnectionState: ActionCreator<ChangeConnectionStateAction> = (connectionState: ConnectionState) => ({
+  type: CHANGE_STATE,
+  connectionState,
 })
