@@ -52,8 +52,10 @@ gulp.task('client:buildjs', (cb) => webpack(webpackConfig, cb))
 
 gulp.task('client:copyRoot', () => {
   const version = process.env['SOURCE_VERSION'] || exec('git rev-parse HEAD', { silent: true }).stdout.trim()
+  const analyticsId = process.env['ANALYTICS_ID'] || 'dev' // UA-4054156-5 (in prod)
+
   tmpl('public/version.js.mst', 'public/version.js', { version })
-  tmpl('public/index.html.mst', 'public/index.html', { version })
+  tmpl('public/index.html.mst', 'public/index.html', { version, analyticsId })
 })
 
 gulp.task('client:run', ['client:copyRoot', 'client:runServer'])
