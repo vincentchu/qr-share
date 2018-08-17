@@ -28,14 +28,32 @@ const Card: React.SFC<CardProps> = (props) => {
     }
   }
 
+  const aRef = (a: any) => {
+    if (a) {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        if (a) {
+          a.href = reader.result
+        }
+      }
+      a.download = file.name
+    }
+  }
+
   return (
     <div className="card gallery-card">
       <div className="card-img-top gallery-img" ref={ref}/>
 
       <div className="card-body">
-        <h5 className="card-title">{ file.name }</h5>
+        <div className="card-title-container">
+          <h5 className="card-title">{ file.name }</h5>
+        </div>
         <p className="card-text">
-          { filesize(file.size, ) }
+          <a ref={aRef}>
+            <img className="download" src="/cloud-download.svg" />
+            { filesize(file.size, ) }
+          </a>
         </p>
       </div>
 

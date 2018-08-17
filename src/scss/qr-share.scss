@@ -40,12 +40,33 @@ $font-family-sans-serif: 'Roboto', 'Helvetica Nueue', Helvetica, sans-serif;
 
   .gallery-card {
     width: 200px;
+    height: 260px;
     margin: 30px;
+    align-items: center;
 
     .gallery-img {
-      width: 200px;
+      width: 195px;
       height: 150px;
       background-repeat: no-repeat;
+    }
+
+    .card-body {
+      .card-text {
+        .download {
+          margin-right: 10px;
+          cursor: pointer;
+        }
+      }
+
+      .card-title-container {
+        margin-bottom: 0.75rem;
+        height: 45px;
+        overflow: hidden;
+
+        h5.card-title {
+          margin-bottom: 0px;
+        }
+      }
     }
   }
 }
