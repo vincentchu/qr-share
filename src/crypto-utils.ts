@@ -59,37 +59,36 @@ export const encrypt: DataBijection = (data: Data): Promise<Data> => {
 
   return Promise.resolve(data)
 }
-// export const encryptArrayBuffer = (data: ArrayBuffer, keyIV: KeyIV): PromiseLike<string> => {
-//   const { key, iv } = keyIV
-//   const bytes = new Uint8Array(data)
-
-//   return crypto.subtle.encrypt({ name: AESAlgo, iv }, key, bytes)
-//     .then((encryptedBuffer) => {
-//       const encryptedBytes = new Uint8Array(encryptedBuffer)
-
-//       return base64.fromByteArray(encryptedBytes)
-//     })
-// }
-
-export const encryptString = (data: string, keyIV: KeyIV): PromiseLike<string> => {
+export const encryptArrayBuffer = (data: ArrayBuffer, keyIV: KeyIV): PromiseLike<ArrayBuffer> => {
   const { key, iv } = keyIV
-  const encoder = new TextEncoder()
-  const bytes = encoder.encode(data)
+  const bytes = new Uint8Array(data)
 
   return crypto.subtle.encrypt({ name: AESAlgo, iv }, key, bytes)
-    .then((encryptedBuffer) => {
-      const encryptedBytes = new Uint8Array(encryptedBuffer)
-
-      return base64.fromByteArray(encryptedBytes)
-    })
 }
 
-export const decryptstring = (encrypted: string, keyIV: KeyIV): PromiseLike<string> => {
-  const { key, iv } = keyIV
-  const encryptedBytes = <ArrayBuffer>base64.toByteArray(encrypted).buffer
+export const encryptString = (data: string, keyIV: KeyIV): PromiseLike<string> => {
+  const encoder = new TextEncoder()
+  const buffer = <ArrayBuffer>encoder.encode(data).buffer
 
-  return crypto.subtle.decrypt({ name: AESAlgo, iv }, key, encryptedBytes).then((plaintextBytes) => {
-    const arr = new Uint8Array(plaintextBytes, 0, plaintextBytes.byteLength)
+  return encryptArrayBuffer(buffer, keyIV).then((encryptedBuf) => {
+    const encryptedBytes = new Uint8Array(encryptedBuf)
+
+    return base64.fromByteArray(encryptedBytes)
+  })
+}
+
+export const decryptArrayBuffer = (data: ArrayBuffer, keyIV: KeyIV): PromiseLike<ArrayBuffer> => {
+  const { key, iv } = keyIV
+
+  return crypto.subtle.decrypt({ name: AESAlgo, iv }, key, data)
+}
+
+export const decryptString = (encrypted: string, keyIV: KeyIV): PromiseLike<string> => {
+  const { key, iv } = keyIV
+  const encryptedBuf = <ArrayBuffer>base64.toByteArray(encrypted).buffer
+
+  return decryptArrayBuffer(encryptedBuf, keyIV).then((buf) => {
+    const arr = new Uint8Array(buf)
     const dec = new TextDecoder('utf-8')
 
     return dec.decode(arr)

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { connect, DispatchProp } from 'react-redux'
 
-import { generateKey, exportKey, importKey, encryptString, decryptstring } from './crypto-utils'
+import { generateKey, exportKey, importKey, encryptString, decryptString } from './crypto-utils'
 import  './scss/qr-share.scss'
 
 type AppProps = {
@@ -62,7 +62,7 @@ generateKey().then((key) => {
   encryptString('hello, there', kiv1).then((eStr) => {
     console.log('ENCRYPTED STR', eStr)
 
-    return decryptstring(eStr, kiv2).then((dStr) => {
+    return decryptString(eStr, kiv2).then((dStr) => {
       console.log('DECRYPTED', dStr)
     })
   })
