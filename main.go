@@ -173,6 +173,7 @@ func (handler *ConnectionHandler) HandleMessage(id Id, scope ScopeType, message 
 
 	case "candidate":
 		handler.Candidate(id, scope, partner, partnerOk, message)
+
 	case "data-string", "data-binary":
 		handler.Data(id, scope, partner, partnerOk, message)
 	}

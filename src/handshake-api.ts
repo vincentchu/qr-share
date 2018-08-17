@@ -40,7 +40,7 @@ export type DataSender = (data: string | ArrayBuffer) => Promise<void>
 
 export type ConnectionState = 'connecting' | 'webrtc' | 'websocket'
 
-type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate' | 'data-string' | 'data-binary'
+type HandshakeApiMessageType = 'offer' | 'get-offer' | 'answer' | 'candidate' | 'data-string' | 'data-binary' | 'ping'
 
 type HandshakeApiMessage = {
   id: string
@@ -231,6 +231,18 @@ class HandshakeApi {
     })
   }
 
+  private keepAlive = () => {
+    const poller = () => {
+      this.wsSend({
+        id: uuid(),
+        mesgType: 'ping',
+        data: '',
+      }).then(() => setTimeout(poller, 15000))
+    }
+
+    poller()
+  }
+
   private init = (): Promise<any> => {
     let tries = 0
     const openPromise = new Promise((resolve) => {
@@ -249,7 +261,7 @@ class HandshakeApi {
       waitForReady()
     })
 
-    return openPromise
+    return openPromise.then(this.keepAlive)
   }
 
   private waitForIceConnected = (): Promise<void> => {
