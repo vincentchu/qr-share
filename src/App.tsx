@@ -49,9 +49,15 @@ generateKey().then((key) => {
       return [key, kkey]
     })
   })
-}).then(([ k1, k2 ]) => {
-  const iv = new Uint8Array(16)
-  crypto.getRandomValues(iv)
+}).then(([ kiv1, kiv2 ]) => {
+  const iv1 = kiv1.iv
+  const k1 = kiv1.key
+
+  const iv2 = kiv2.iv
+  const k2 = kiv2.key
+
+  console.log('IV EQUAL', iv1 === iv2)
+  const iv = iv1
 
   encryptString('hello, there', k1, iv).then((eStr) => {
     console.log('ENCRYPTED STR', eStr)

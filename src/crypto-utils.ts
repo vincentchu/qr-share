@@ -1,8 +1,13 @@
 import * as base64 from 'base64-js'
-import { createReadStream } from 'fs';
+
+export type KeyIV = {
+  key: CryptoKey
+  iv: Uint8Array
+}
 
 type Data = string | ArrayBuffer
 type DataBijection = (data: Data) => Promise<Data>
+
 
 const AESAlgo = 'AES-CBC'
 const AESParams = {
@@ -12,19 +17,41 @@ const AESParams = {
 
 const KeyUses = [ 'encrypt', 'decrypt' ]
 
-export const generateKey = () => crypto.subtle.generateKey(AESParams, true, KeyUses)
+const IVLength = 16
 
-export const exportKey = (key: CryptoKey) => crypto.subtle.exportKey('raw', key)
-  .then((buffer) => {
-    const bytes = new Uint8Array(buffer, 0, buffer.byteLength)
+export const generateKey = (): PromiseLike<KeyIV> =>
+  crypto.subtle.generateKey(AESParams, true, KeyUses).then((key) => {
+    const iv = new Uint8Array(IVLength)
+    crypto.getRandomValues(iv)
 
-    return base64.fromByteArray(bytes)
+    return { key, iv }
   })
 
-export const importKey = (keyBase64: string) => {
+
+export const exportKey = (keyIV: KeyIV): PromiseLike<string> => {
+  const { key, iv } = keyIV
+
+  return crypto.subtle.exportKey('raw', key)
+    .then((keyBuf) => {
+      const keyBytes = new Uint8Array(keyBuf)
+      const bytes = new Uint8Array(keyBytes.length + IVLength)
+
+      bytes.set(iv)
+      bytes.set(keyBytes, IVLength)
+
+      return base64.fromByteArray(bytes)
+    })
+}
+
+export const importKey = (keyBase64: string): PromiseLike<KeyIV> => {
   const bytes = <ArrayBuffer>base64.toByteArray(keyBase64).buffer
 
-  return crypto.subtle.importKey('raw', bytes, AESAlgo, true, KeyUses)
+  const iv = new Uint8Array(bytes.slice(0, IVLength))
+  const keyBytes = bytes.slice(IVLength)
+
+  return crypto.subtle.importKey('raw', keyBytes, AESAlgo, true, KeyUses).then((key) => ({
+    key, iv
+  }))
 }
 
 export const encrypt: DataBijection = (data: Data): Promise<Data> => {
