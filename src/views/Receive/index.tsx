@@ -11,6 +11,7 @@ import Progress from '../Progress'
 import Footer from '../Footer'
 import StepBlock from '../StepBlock'
 import { WebsocketUrl } from '../url-helper'
+import { importKey } from '../../crypto-utils'
 import HandshakeApi, { ConnectionState } from '../../handshake-api'
 import { ReceiverState } from '../../state/receiver'
 import { FileStub, FileTransfer } from '../../state/shared'
@@ -53,13 +54,17 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 const loader = (dispatch: Dispatch, props: ReceiveProps): Promise<any> => {
   const {
     match: { params: { id } },
+    location: { hash },
   } = props
 
+  console.log('HASH', hash)
   const handshakeApi = new HandshakeApi(WebsocketUrl, id, 'answer')
   handshakeApi.onData = receiveFiles(dispatch, handshakeApi)
 
   // @ts-ignore
   window.h = handshakeApi
+
+  importKey(hash.slice(1)).then((keyIV) => handshakeApi.keyIV = keyIV)
 
   return handshakeApi.receiveHandshake()
 }
