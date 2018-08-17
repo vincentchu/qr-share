@@ -6,8 +6,7 @@ export type KeyIV = {
 }
 
 type Data = string | ArrayBuffer
-type DataBijection = (data: Data) => Promise<Data>
-
+type DataBijection = (data: Data, keyIV: KeyIV) => PromiseLike<Data>
 
 const AESAlgo = 'AES-CBC'
 const AESParams = {
@@ -54,11 +53,22 @@ export const importKey = (keyBase64: string): PromiseLike<KeyIV> => {
   }))
 }
 
-export const encrypt: DataBijection = (data: Data): Promise<Data> => {
+export const encrypt: DataBijection = (data: Data, keyIV: KeyIV): PromiseLike<Data> => {
+  if (typeof data === 'string') {
+    return encryptString(data, keyIV)
+  }
 
-
-  return Promise.resolve(data)
+  return encryptArrayBuffer(data, keyIV)
 }
+
+export const decrypt: DataBijection = (encryptedData: Data, keyIV: KeyIV): PromiseLike<Data> => {
+  if (typeof encryptedData === 'string') {
+    return decryptString(encryptedData, keyIV)
+  }
+
+  return decryptArrayBuffer(encryptedData, keyIV)
+}
+
 export const encryptArrayBuffer = (data: ArrayBuffer, keyIV: KeyIV): PromiseLike<ArrayBuffer> => {
   const { key, iv } = keyIV
   const bytes = new Uint8Array(data)
@@ -84,7 +94,6 @@ export const decryptArrayBuffer = (data: ArrayBuffer, keyIV: KeyIV): PromiseLike
 }
 
 export const decryptString = (encrypted: string, keyIV: KeyIV): PromiseLike<string> => {
-  const { key, iv } = keyIV
   const encryptedBuf = <ArrayBuffer>base64.toByteArray(encrypted).buffer
 
   return decryptArrayBuffer(encryptedBuf, keyIV).then((buf) => {
