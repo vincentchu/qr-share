@@ -354,7 +354,7 @@ class HandshakeApi {
           return Promise.resolve(this.rtcDataChannel.send(dataToSend))
 
         case 'websocket':
-          return this.sendFallback(data)
+          return this.sendFallback(dataToSend)
 
         default:
           return Promise.reject(`HandshakeApi: invalid connectionState: ${this.connectionState}`)
