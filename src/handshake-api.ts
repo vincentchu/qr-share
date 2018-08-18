@@ -266,7 +266,7 @@ class HandshakeApi {
     const webRtcConnected = waitFor(() => this.peerConnection.iceConnectionState === 'completed' && this.rtcDataChannel.readyState === 'open')
       .then(() => 'webrtc')
 
-    const timeoutFallback = resolveAfter(2000).then(() => 'websocket')
+    const timeoutFallback = resolveAfter(2).then(() => 'websocket')
 
     return Promise.race([ webRtcConnected, timeoutFallback ]).then((state: ConnectionState) => {
       this.connectionState = state

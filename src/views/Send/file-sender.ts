@@ -1,11 +1,14 @@
 import { ImageFile } from 'react-dropzone'
 import { Dispatch } from 'redux'
+import * as uuid from 'uuid/v1'
 
 import { trackOnDrop, trackFileSize, trackConnectionMethod } from '../../analytics'
+import { toBase64Str } from '../../crypto-utils'
 import HandshakeApi from '../../handshake-api'
 import { changeDataReady, changeCurrentFile, changeBytesTransferred } from '../../state/uploader'
 
-const ChunkSize = 16384
+// const ChunkSize = 16384
+const ChunkSize = 10000
 
 export const sendFiles = (files: ImageFile[], handshakeApi: HandshakeApi, dispatch: Dispatch) => {
   dispatch(changeDataReady(handshakeApi.connectionState))
@@ -20,18 +23,28 @@ export const sendFiles = (files: ImageFile[], handshakeApi: HandshakeApi, dispat
     return Promise.resolve(1)
   }
 
-  sender(0).then(() => dispatch(changeCurrentFile()))
+  sender(0).then(() => {
+    dispatch(changeCurrentFile())
+    handshakeApi.send(JSON.stringify({ action: 'end-transfer' }))
+  })
 }
 
-const streamChunk = (file: ImageFile, offset: number, handshakeApi: HandshakeApi, dispatch: Dispatch): Promise<any> => {
+const streamChunk = (file: ImageFile, fileUUID: string, offset: number, handshakeApi: HandshakeApi, dispatch: Dispatch): Promise<any> => {
   return new Promise((resolve) => {
     const blob = file.slice(offset, offset + ChunkSize)
     dispatch(changeBytesTransferred(offset))
 
     const reader = new FileReader()
     reader.onload = () => {
-      const arrBuff = reader.result
-      handshakeApi.send(arrBuff).then(resolve)
+      const arrBuff = <ArrayBuffer>reader.result
+      const chunk = JSON.stringify({
+        action: 'chunk',
+        chunk: toBase64Str(arrBuff),
+        offset,
+        fileUUID,
+      })
+
+      handshakeApi.send(chunk).then(resolve)
     }
 
     reader.readAsArrayBuffer(blob)
@@ -43,6 +56,7 @@ const sendFile = (file: ImageFile, handshakeApi: HandshakeApi, dispatch: Dispatc
   dispatch(changeCurrentFile(file))
   trackFileSize(handshakeApi.scope, file.size)
 
+  const fileUUID = uuid()
   return handshakeApi.send(JSON.stringify({
     action: 'start',
     name: file.name,
@@ -50,6 +64,7 @@ const sendFile = (file: ImageFile, handshakeApi: HandshakeApi, dispatch: Dispatc
     size: file.size,
     hasPreview: !!file.preview,
     lastModified: file.lastModified,
+    fileUUID,
   })).then(() => {
     const streamer = (offset: number): Promise<any> => {
       if (offset > file.size) {
@@ -57,13 +72,13 @@ const sendFile = (file: ImageFile, handshakeApi: HandshakeApi, dispatch: Dispatc
         return Promise.resolve()
       } else {
         console.log('sendFile: sending next chunk', offset)
-        return streamChunk(file, offset, handshakeApi, dispatch).then(() => streamer(offset + ChunkSize))
+        return streamChunk(file, fileUUID, offset, handshakeApi, dispatch).then(() => streamer(offset + ChunkSize))
       }
     }
 
     return streamer(0).then(() => {
       console.log('sendFile: Finished sending', file.name)
-      handshakeApi.send(JSON.stringify({ action: 'end' }))
+      handshakeApi.send(JSON.stringify({ action: 'end', fileUUID }))
     })
   })
 }

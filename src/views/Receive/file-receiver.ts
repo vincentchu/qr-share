@@ -2,7 +2,7 @@ import { Dispatch } from 'redux'
 
 import { trackFileSize } from '../../analytics'
 import HandshakeApi, { DataSender } from '../../handshake-api'
-import { startFile, endFile, addChunk, changeConnectionState } from '../../state/receiver'
+import { startFile, endFile, endTransfer, addChunk, changeConnectionState } from '../../state/receiver'
 
 type ActionMessage = {
   action: string
@@ -11,6 +11,9 @@ type ActionMessage = {
   size?: number
   hasPreview?: boolean
   lastModified?: number
+  fileUUID?: string
+  offset?: number
+  chunk?: string
 }
 
 export const receiveFiles = (dispatch: Dispatch, handshakeApi: HandshakeApi): DataSender => (data: string | ArrayBuffer) => {
@@ -20,16 +23,29 @@ export const receiveFiles = (dispatch: Dispatch, handshakeApi: HandshakeApi): Da
     const mesg: ActionMessage = JSON.parse(data)
     switch (mesg.action) {
       case 'start':
-        dispatch((startFile(mesg)))
+        dispatch((startFile(mesg.fileUUID, mesg)))
         trackFileSize(handshakeApi.scope, mesg.size)
         break
 
+      case 'chunk':
+        dispatch(addChunk({
+          fileUUID: mesg.fileUUID,
+          offset: mesg.offset,
+          chunkBase64: mesg.chunk,
+        }))
+
       case 'end':
-        dispatch(endFile())
+        dispatch(endFile(mesg.fileUUID))
+        break
+
+      case 'end-transfer':
+        // Safari is kind of crazy with race conditions, so give 1s for everything to settle down
+        // before trying to reassemble files
+        setTimeout(() => dispatch(endTransfer()), 1000)
         break
     }
   } else {
-    dispatch(addChunk(data))
+    throw new Error('No raw data should be transferred')
   }
 
   return Promise.resolve()

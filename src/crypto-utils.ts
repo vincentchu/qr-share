@@ -19,6 +19,18 @@ const KeyUses = [ 'encrypt', 'decrypt' ]
 
 const IVLength = 16
 
+export const toBase64Str = (buffer: ArrayBuffer): string => {
+  const bytes = new Uint8Array(buffer)
+
+  return base64.fromByteArray(bytes)
+}
+
+export const fromBase64Str = (base64Str: string): ArrayBuffer => {
+  const buffer = <ArrayBuffer>base64.toByteArray(base64Str).buffer
+
+  return buffer
+}
+
 export const generateKey = (): Promise<KeyIV> =>
   promiseLikeToPromise(crypto.subtle.generateKey(AESParams, true, KeyUses).then((key) => {
     const iv = new Uint8Array(IVLength)
@@ -26,7 +38,6 @@ export const generateKey = (): Promise<KeyIV> =>
 
     return { key, iv }
   }))
-
 
 export const exportKey = (keyIV: KeyIV): Promise<string> => {
   const { key, iv } = keyIV

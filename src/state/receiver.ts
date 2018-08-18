@@ -23,10 +23,15 @@ const completedFile = (currentFile: FileStub, currentTransfer: FileTransfer): Fi
   const props = {
     type: currentFile.type,
     lastModified: currentFile.lastModified,
-
   }
 
   return new File([ blob ], currentFile.name, props)
+}
+
+export type Chunk = {
+  fileUUID: string
+  offset: number
+  chunkBase64: string
 }
 
 export type ReceiverState = {
@@ -45,27 +50,35 @@ const InitialState: ReceiverState = {
 
 const START_FILE = 'state-receiver/START_FILE'
 const END_FILE = 'state-receiver/END_FILE'
+const END_TRANSFER = 'state-receiver/END_TRANSFER'
 const ADD_CHUNK = 'state-receiver/ADD_CHUNK'
 const CHANGE_STATE = 'state-receiver/CHANGE_STATE'
 
 type StartFileAction = {
+  fileUUID: string
   currentFile: FileStub
 } & Action<string>
 
-type EndFileAction = {} & Action<string>
+type EndFileAction = {
+  fileUUID: string
+} & Action<string>
 
 type AddChunkAction = {
-  chunk: ArrayBuffer
+  chunk: Chunk
 } & Action<string>
 
 type ChangeConnectionStateAction = {
   connectionState: ConnectionState
 } & Action<string>
 
+type EndTransferAction = {
+} & Action<string>
+
 export const reducer: Reducer<ReceiverState, AnyAction> = (
   state: ReceiverState = InitialState,
   action: StartFileAction | EndFileAction | AddChunkAction | ChangeConnectionStateAction
 ) => {
+  return state
   switch (action.type) {
     case START_FILE: {
       const { currentFile } = <StartFileAction>action
@@ -98,15 +111,16 @@ export const reducer: Reducer<ReceiverState, AnyAction> = (
     }
 
     case ADD_CHUNK: {
-      const { chunk } = <AddChunkAction>action
+      // const { chunk } = <AddChunkAction>action
 
-      const { currentTransfer } = state
-      const updatedTransfer = updateTransfer(currentTransfer, chunk)
+      // const { currentTransfer } = state
+      // const updatedTransfer = updateTransfer(currentTransfer, chunk)
 
-      return {
-        ...state,
-        currentTransfer: updatedTransfer,
-      }
+      // return {
+      //   ...state,
+      //   currentTransfer: updatedTransfer,
+      // }
+      return state
     }
 
     case CHANGE_STATE: {
@@ -122,14 +136,18 @@ export const reducer: Reducer<ReceiverState, AnyAction> = (
   }
 }
 
-export const startFile: ActionCreator<StartFileAction> = (currentFile: FileStub) => ({
+export const startFile: ActionCreator<StartFileAction> = (fileUUID: string, currentFile: FileStub) => ({
   type: START_FILE,
+  fileUUID,
   currentFile,
 })
 
-export const endFile: ActionCreator<EndFileAction> = () => ({ type: END_FILE })
+export const endFile: ActionCreator<EndFileAction> = (fileUUID: string) => ({
+  type: END_FILE,
+  fileUUID
+})
 
-export const addChunk: ActionCreator<AddChunkAction> = (chunk: ArrayBuffer) => ({
+export const addChunk: ActionCreator<AddChunkAction> = (chunk: Chunk) => ({
   type: ADD_CHUNK,
   chunk,
 })
@@ -137,4 +155,8 @@ export const addChunk: ActionCreator<AddChunkAction> = (chunk: ArrayBuffer) => (
 export const changeConnectionState: ActionCreator<ChangeConnectionStateAction> = (connectionState: ConnectionState) => ({
   type: CHANGE_STATE,
   connectionState,
+})
+
+export const endTransfer: ActionCreator<EndTransferAction> = () => ({
+  type: END_TRANSFER
 })
