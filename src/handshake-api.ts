@@ -209,8 +209,6 @@ class HandshakeApi {
 
       dataToSend.then(this.onData)
     }
-
-    this.onData && this.onData(data)
   }
 
   private onIceCandidate  = (iceEvt: RTCPeerConnectionIceEvent) => {
