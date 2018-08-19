@@ -23,7 +23,7 @@ export const receiveFiles = (dispatch: Dispatch, handshakeApi: HandshakeApi): Da
     const mesg: ActionMessage = JSON.parse(data)
     switch (mesg.action) {
       case 'start':
-        dispatch((startFile(mesg.fileUUID, mesg)))
+        dispatch((startFile(mesg)))
         trackFileSize(handshakeApi.scope, mesg.size)
         break
 
@@ -32,6 +32,7 @@ export const receiveFiles = (dispatch: Dispatch, handshakeApi: HandshakeApi): Da
           fileUUID: mesg.fileUUID,
           offset: mesg.offset,
           chunkBase64: mesg.chunk,
+          size: mesg.size,
         }))
 
       case 'end':

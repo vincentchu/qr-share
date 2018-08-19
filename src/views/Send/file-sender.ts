@@ -8,7 +8,7 @@ import HandshakeApi from '../../handshake-api'
 import { changeDataReady, changeCurrentFile, changeBytesTransferred } from '../../state/uploader'
 
 // const ChunkSize = 16384
-const ChunkSize = 10000
+export const ChunkSize = 10000
 
 export const sendFiles = (files: ImageFile[], handshakeApi: HandshakeApi, dispatch: Dispatch) => {
   dispatch(changeDataReady(handshakeApi.connectionState))
@@ -40,6 +40,7 @@ const streamChunk = (file: ImageFile, fileUUID: string, offset: number, handshak
       const chunk = JSON.stringify({
         action: 'chunk',
         chunk: toBase64Str(arrBuff),
+        size: file.size,
         offset,
         fileUUID,
       })

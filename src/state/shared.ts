@@ -1,4 +1,5 @@
 export type FileStub = {
+  fileUUID: string
   lastModified: number
   name: string
   size: number
