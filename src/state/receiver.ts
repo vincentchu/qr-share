@@ -75,11 +75,7 @@ const appendChunk = (inProgress: FilesInProgress, chunk: Chunk, buffer: ArrayBuf
   inProgressFile.buffer[idx] = buffer
   inProgressFile.bytesTransferred += buffer.byteLength
 
-  console.log('>>> BYTES TRANSFERRED', inProgressFile.bytesTransferred)
-
   let file = completedFile(chunk, inProgressFile)
-  console.log('>> FILE', file)
-
   const updatedInProgress = {
     ...inProgress,
     [ fileUUID ]: inProgressFile,
@@ -95,11 +91,8 @@ const updateWithChunk = (state: ReceiverState, chunk: Chunk): ReceiverState => {
   const { fileUUID, offset, chunkBase64, size } = chunk
   const { filesInProgress, completedFiles, currentTransfer } = state
 
-  console.log('ADDING CHUNK', fileUUID, offset, size)
-
   const buffer = fromBase64Str(chunkBase64)
   const appendedChunk = appendChunk(filesInProgress, chunk, buffer)
-  console.log('APPENDED CHUNK', appendedChunk)
 
   const updatedCompletedFiles = { ...completedFiles }
   if (appendedChunk.file) {

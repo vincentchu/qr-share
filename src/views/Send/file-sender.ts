@@ -7,8 +7,7 @@ import { toBase64Str } from '../../crypto-utils'
 import HandshakeApi from '../../handshake-api'
 import { changeDataReady, changeCurrentFile, changeBytesTransferred } from '../../state/uploader'
 
-// const ChunkSize = 16384
-export const ChunkSize = 10000
+export const ChunkSize = 16384
 
 export const sendFiles = (files: ImageFile[], handshakeApi: HandshakeApi, dispatch: Dispatch) => {
   dispatch(changeDataReady(handshakeApi.connectionState))
