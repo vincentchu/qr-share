@@ -69,7 +69,7 @@ type AppendChunkResp = {
 const appendChunk = (inProgress: FilesInProgress, chunk: Chunk, buffer: ArrayBuffer): AppendChunkResp => {
   const { fileUUID, size, offset } = chunk
 
-  const inProgressFile = inProgress[fileUUID] || emptyFileTransfer(size)
+  const inProgressFile = inProgress[fileUUID] ? { ...inProgress[fileUUID] } : emptyFileTransfer(size)
   const idx = Math.floor(offset / ChunkSize)
 
   inProgressFile.buffer[idx] = buffer
@@ -88,7 +88,7 @@ const appendChunk = (inProgress: FilesInProgress, chunk: Chunk, buffer: ArrayBuf
 }
 
 const updateWithChunk = (state: ReceiverState, chunk: Chunk): ReceiverState => {
-  const { fileUUID, offset, chunkBase64, size } = chunk
+  const { fileUUID, chunkBase64 } = chunk
   const { filesInProgress, completedFiles, currentTransfer } = state
 
   const buffer = fromBase64Str(chunkBase64)
