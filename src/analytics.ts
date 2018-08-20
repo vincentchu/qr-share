@@ -3,6 +3,7 @@ import { ConnectionState, ScopeType } from './handshake-api'
 const wrappedSend = (action: string, label: string, value: number) => {
   try {
     if (window.ga) {
+      console.log('Sending event (GA):', action, label, value)
       window.ga('send', 'event', 'metrics', action, label, value)
     } else {
       console.log('Sending event:', action, label, value)
