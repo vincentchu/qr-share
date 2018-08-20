@@ -48,7 +48,7 @@ const Upload: React.SFC<UploadProps> = (props) => {
         ) }
       </div>
       <StepBlock
-        header="Step 2: Scan QR code"
+        header="Step 2: Scan QR code using your iPhone camera"
         subHeader="Don't worry, your files are sent with 256-bit AES encryption"
       />
     </div>

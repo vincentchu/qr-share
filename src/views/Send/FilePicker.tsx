@@ -15,12 +15,12 @@ const FilePicker: React.SFC<FilePickerProps> = (props) => {
       <div className="row">
         <div className="block text-center">
           <h1 className="block-title">QQSend</h1>
-          <h4 className="text-muted">Send pictures and files between your iPhone, Android, or Desktop browser</h4>
+          <h4 className="text-muted">Send pictures and files between phones or desktop just by scanning a QR code</h4>
           <button className="btn btn-primary btn-lg mt-1" disabled={!window.isModern}>Select Files</button>
         </div>
         <StepBlock
           header="Step 1: Select your files"
-          subHeader="(or just drag and drop them into the window)"
+          subHeader="(or drop them into the window)"
         />
       </div>
     </Dropzone>
