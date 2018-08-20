@@ -40,7 +40,10 @@ const streamChunk = (file: ImageFile, fileUUID: string, offset: number, handshak
       const chunk = JSON.stringify({
         action: 'chunk',
         chunk: toBase64Str(arrBuff),
+        name: file.name,
         size: file.size,
+        lastModified: file.lastModified,
+        type: file.type,
         offset,
         fileUUID,
       })

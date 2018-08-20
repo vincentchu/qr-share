@@ -18,27 +18,18 @@ const filePartsComplete = (parts: ArrayBuffer[]): boolean => {
   return parts.findIndex((part) => typeof part === 'undefined') === -1
 }
 
-
-// const updateTransfer = (currentTransfer: FileTransfer, chunk: ArrayBuffer): FileTransfer => ({
-//   bytesTransferred: currentTransfer.bytesTransferred + chunk.byteLength,
-//   buffer: currentTransfer.buffer.concat([ chunk ])
-// })
-
-const completedFile = (expectedSize: number, inProgress: FileTransfer): File => {
+const completedFile = (chunk: Chunk, inProgress: FileTransfer): File => {
+  const { name, size, type, lastModified } = chunk
   let file: File
 
   if (filePartsComplete(inProgress.buffer)) {
-    if (expectedSize !== inProgress.bytesTransferred) {
-      console.trace('HMMM unexpected file size', expectedSize, inProgress.bytesTransferred)
-      // throw new Error(`Received bytes note equal to file size ${currentTransfer.bytesTransferred} != ${currentFile.size}`)
+    if (size !== inProgress.bytesTransferred) {
+      throw new Error(`Received bytes note equal to file size ${inProgress.bytesTransferred} != ${size}`)
     }
 
     const blob = new Blob(inProgress.buffer)
-    const props = {
-      type: 'image/png', // currentFile.type,
-      lastModified: 0, //currentFile.lastModified,
-    }
-    file = new File([ blob ], 'foo.png', props)
+    const props = { type, lastModified }
+    file = new File([ blob ], name, props)
   }
 
   return file
@@ -46,9 +37,12 @@ const completedFile = (expectedSize: number, inProgress: FileTransfer): File => 
 
 export type Chunk = {
   fileUUID: string
+  name: string,
   offset: number
   chunkBase64: string
   size: number,
+  type: string,
+  lastModified: number,
 }
 
 type FilesInProgress = {
@@ -72,16 +66,18 @@ type AppendChunkResp = {
   file?: File
 }
 
-const appendChunk = (inProgress: FilesInProgress, fileUUID: string, size: number, offset: number, buffer: ArrayBuffer): AppendChunkResp => {
+const appendChunk = (inProgress: FilesInProgress, chunk: Chunk, buffer: ArrayBuffer): AppendChunkResp => {
+  const { fileUUID, size, offset } = chunk
+
   const inProgressFile = inProgress[fileUUID] || emptyFileTransfer(size)
   const idx = Math.floor(offset / ChunkSize)
 
   inProgressFile.buffer[idx] = buffer
   inProgressFile.bytesTransferred += buffer.byteLength
 
-  console.log('>>> BYTES TRANSFERRED', inProgress.bytesTransferred)
+  console.log('>>> BYTES TRANSFERRED', inProgressFile.bytesTransferred)
 
-  let file = completedFile(size, inProgressFile)
+  let file = completedFile(chunk, inProgressFile)
   console.log('>> FILE', file)
 
   const updatedInProgress = {
@@ -102,7 +98,7 @@ const updateWithChunk = (state: ReceiverState, chunk: Chunk): ReceiverState => {
   console.log('ADDING CHUNK', fileUUID, offset, size)
 
   const buffer = fromBase64Str(chunkBase64)
-  const appendedChunk = appendChunk(filesInProgress, fileUUID, size, offset, buffer)
+  const appendedChunk = appendChunk(filesInProgress, chunk, buffer)
   console.log('APPENDED CHUNK', appendedChunk)
 
   const updatedCompletedFiles = { ...completedFiles }
@@ -178,11 +174,6 @@ export const reducer: Reducer<ReceiverState, AnyAction> = (
       const { chunk } = <AddChunkAction>action
 
       return updateWithChunk(state, chunk)
-    }
-
-    case END_TRANSFER: {
-      // TODO(vc): Check to see if any outstanding files
-      return state
     }
 
     case CHANGE_STATE: {

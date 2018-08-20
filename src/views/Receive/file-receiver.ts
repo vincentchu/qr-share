@@ -32,7 +32,10 @@ export const receiveFiles = (dispatch: Dispatch, handshakeApi: HandshakeApi): Da
           fileUUID: mesg.fileUUID,
           offset: mesg.offset,
           chunkBase64: mesg.chunk,
+          name: mesg.name,
           size: mesg.size,
+          type: mesg.type,
+          lastModified: mesg.lastModified,
         }))
 
       case 'end':
