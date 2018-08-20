@@ -45,8 +45,9 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 
         { isDone && (
           <div className="finished">
+            <p className="text-muted">Download Complete</p>
             <a className="btn btn-success btn-lg" href="/" role="button">
-              Download Complete. Send Your Own Files?
+              Try QQSend
             </a>
           </div>
         ) }

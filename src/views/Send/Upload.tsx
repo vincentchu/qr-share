@@ -34,10 +34,10 @@ const Upload: React.SFC<UploadProps> = (props) => {
 
         <FileList files={files} transferredFiles={transferredFiles} />
 
-        <Progress
+        { !isDone && <Progress
           connectionState={connectionState}
           currentFile={currentFile} currentTransfer={currentTransfer}
-        />
+        /> }
 
         { isDone && (
           <div className="finished">
