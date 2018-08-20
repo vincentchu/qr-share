@@ -39,7 +39,7 @@ const Upload: React.SFC<UploadProps> = (props) => {
           currentFile={currentFile} currentTransfer={currentTransfer}
         />
 
-        {isDone && (
+        { isDone && (
           <div className="finished">
             <a className="btn btn-success btn-lg" href="/" role="button">
               Transfer Complete. Send More?

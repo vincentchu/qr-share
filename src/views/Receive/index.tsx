@@ -42,7 +42,16 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
           connectionState={connectionState}
           currentFile={currentFile} currentTransfer={xfer}
         /> }
+
+        { isDone && (
+          <div className="finished">
+            <a className="btn btn-success btn-lg" href="/" role="button">
+              Download Complete. Send Your Own Files?
+            </a>
+          </div>
+        ) }
       </div>
+
 
       <Gallery files={files} />
 
