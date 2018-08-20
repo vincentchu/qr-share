@@ -24,7 +24,7 @@ type RouteProps = {
 type ReceiveProps = {
   connectionState: ConnectionState
   currentFile?: FileStub
-  currentTransfer?: FileTransfer
+  currentTransfer: number
   files: File[]
 } & RouteComponentProps<RouteProps> & DispatchProp
 
@@ -33,13 +33,14 @@ const Receive: React.SFC<ReceiveProps> = (props) => {
 
   const isDone = isNil(currentFile) && files.length > 0
   const header = isDone ? 'Transfer Completed' : 'Receiving Files'
+  const xfer: FileTransfer = { bytesTransferred: currentTransfer, buffer: [] }
 
   return (
     <div className="row justify-content-center">
       <div className="block text-center">
         { !isDone && <Progress
           connectionState={connectionState}
-          currentFile={currentFile} currentTransfer={currentTransfer}
+          currentFile={currentFile} currentTransfer={xfer}
         /> }
       </div>
 

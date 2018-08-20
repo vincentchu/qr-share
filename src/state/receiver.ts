@@ -155,7 +155,7 @@ export const reducer: Reducer<ReceiverState, AnyAction> = (
       }
     }
 
-    case END_FILE: {
+    case END_TRANSFER: {
       return {
         ...state,
         currentFile: undefined,
