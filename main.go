@@ -325,8 +325,28 @@ func handshake(writer http.ResponseWriter, reader *http.Request) {
 	}
 }
 
-func root(writer http.ResponseWriter, reader *http.Request) {
-	http.ServeFile(writer, reader, string(http.Dir("public/index.html")))
+var static = http.FileServer(http.Dir("public"))
+
+type RootHandler struct {
+	forceSSL bool
+}
+
+func (r RootHandler) ServeHTTP(writer http.ResponseWriter, reader *http.Request) {
+	path := reader.URL.Path
+	xFwdProto := reader.Header.Get("X-Forwarded-Proto")
+
+	switch {
+	case (r.forceSSL && xFwdProto != "https"):
+		redirectTo := fmt.Sprintf("https://qqsend.me%s", path)
+		logger.Printf("RootHandler.ServeHTTP - Redirect to: %s", redirectTo)
+		http.Redirect(writer, reader, redirectTo, http.StatusPermanentRedirect)
+
+	case (path == "/" || strings.HasPrefix(path, "/recv/")):
+		http.ServeFile(writer, reader, string(http.Dir("public/index.html")))
+
+	default:
+		static.ServeHTTP(writer, reader)
+	}
 }
 
 type ConfigHandler struct{}
@@ -337,18 +357,20 @@ func (config ConfigHandler) ServeHTTP(writer http.ResponseWriter, reader *http.R
 	configTemplate.Execute(writer, connHandler.iceConfig)
 }
 
-func getEnv() (addr string, twilioSID string, twilioToken string) {
+func getEnv() (addr string, twilioSID string, twilioToken string, forceSSL bool) {
 	port := os.Getenv("PORT")
 	addr = fmt.Sprintf(":%s", port)
 
 	twilioSID = os.Getenv("TWILIO_SID")
 	twilioToken = os.Getenv("TWILIO_TOKEN")
 
-	return addr, twilioSID, twilioToken
+	forceSSL = os.Getenv("FORCE_SSL") == "true"
+
+	return addr, twilioSID, twilioToken, forceSSL
 }
 
 func main() {
-	address, twilioSID, twilioToken := getEnv()
+	address, twilioSID, twilioToken, forceSSL := getEnv()
 	logger.Printf("Listening on address: %s", address)
 
 	connHandler.RefreshICE(twilioSID, twilioToken)
@@ -356,9 +378,8 @@ func main() {
 	http.HandleFunc("/ws", handshake)
 	http.Handle("/config.js", ConfigHandler{})
 
-	static := http.FileServer(http.Dir("public"))
-	http.Handle("/", static)
-	http.HandleFunc("/recv/", root)
+	rootHandler := RootHandler{forceSSL}
+	http.Handle("/", rootHandler)
 
 	logger.Fatal(http.ListenAndServe(address, nil))
 }
