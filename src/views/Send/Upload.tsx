@@ -5,7 +5,7 @@ import { isNil } from 'ramda'
 
 import FileList from './FileList'
 import Progress from '../Progress'
-import StepBlock from '../StepBlock'
+import { StepTwo } from '../StepBlock'
 import { urlForReceive } from '../url-helper'
 import { ConnectionState } from '../../handshake-api'
 import { FileStub, FileTransfer } from '../../state/shared'
@@ -47,10 +47,8 @@ const Upload: React.SFC<UploadProps> = (props) => {
           </div>
         ) }
       </div>
-      <StepBlock
-        header="Step 2: Scan QR code using your iPhone camera"
-        subHeader="Don't worry, your files are sent with 256-bit AES encryption"
-      />
+
+      <StepTwo />
     </div>
   )
 }

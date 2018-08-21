@@ -2,6 +2,10 @@ $font-family-sans-serif: 'Roboto', 'Helvetica Nueue', Helvetica, sans-serif;
 
 @import 'node_modules/bootstrap/scss/bootstrap';
 
+.step-block-animation {
+  margin-top: 50px;
+}
+
 .file-list {
   display: flex;
   flex-direction: row;

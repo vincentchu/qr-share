@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Dropzone, { DropFilesEventHandler } from 'react-dropzone'
 
-import StepBlock from '../StepBlock'
+import { StepOne, StepTwo } from '../StepBlock'
 
 type FilePickerProps = {
   onDrop: DropFilesEventHandler
@@ -18,10 +18,8 @@ const FilePicker: React.SFC<FilePickerProps> = (props) => {
           <h4 className="text-muted">Send pictures and files between phones or desktop just by scanning a QR code</h4>
           <button className="btn btn-primary btn-lg mt-1" disabled={!window.isModern}>Select Files</button>
         </div>
-        <StepBlock
-          header="Step 1: Select your files"
-          subHeader="(or drop them into the window)"
-        />
+        <StepOne />
+        <StepTwo />
       </div>
     </Dropzone>
   )
