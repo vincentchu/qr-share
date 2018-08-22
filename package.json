@@ -8,7 +8,7 @@
     "clean": "rm -r dist/ dist-server/",
     "heroku-postbuild": "$(npm bin)/gulp client:build"
   },
-  "homepage": "https://github.com/initialized/foundling#readme",
+  "homepage": "https://github.com/vincentchu/qr-share",
   "dependencies": {
     "@types/base64-js": "^1.2.5",
     "@types/classnames": "^2.2.4",
